@@ -5,6 +5,12 @@
 	"homepage": "https://typo3.org/",
 	"type": "typo3-cms-core",
 	"license": "GPL-2.0+",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "/Volumes/CS/Sites/testing-framework/"
+        }
+    ],
 	"authors": [
 		{
 			"name": "TYPO3 CMS Core Team",
@@ -53,7 +59,7 @@
 		"doctrine/dbal": "~2.5.4"
 	},
 	"require-dev": {
-		"typo3/testing-framework": "~1.0.0",
+		"typo3/testing-framework2": "dev-master",
 		"codeception/codeception": "^2.2",
 		"se/selenium-server-standalone": "~2.53",
 		"typo3/cms-styleguide": "~8.0.8",
@@ -79,7 +85,8 @@
 			]
 		},
 		"branch-alias": {
-			"dev-master": "8.x-dev"
+			"dev-master": "9.x-dev",
+			"dev-TYPO3_8-7": "8.7.x-dev"
 		}
 	},
 	"replace": {
