@@ -26,6 +26,11 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  */
 class InfoModule extends AbstractModule
 {
+    public function getIconIdentifier(): string
+    {
+        return 'actions-document-info';
+    }
+
     /**
      * Creates the content for the "info" section ("module") of the Admin Panel
      *
@@ -74,7 +79,7 @@ class InfoModule extends AbstractModule
     public function getLabel(): string
     {
         $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_info.xlf:module.label';
-        return $this->getLanguageService()->sL($locallangFileAndPath);
+        return $this->getLanguageService()->sL($locallangFileAndPath) . ' (Load Time: ' . ($this->getTimeTracker()->getParseTime()) . ' ms)';
     }
 
     /**

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TYPO3\CMS\Adminpanel\Modules;
 
@@ -40,18 +40,20 @@ class TsDebugModule extends AbstractModule
         $view->setPartialRootPaths([$this->extResources . '/Partials']);
 
         $tsfeAdminConfig = $this->getBackendUser()->uc['TSFE_adminConfig'];
-        $view->assignMultiple([
-            'isEnabled' => (int)$tsfeAdminConfig['display_tsdebug'],
-            'tree' => (int)$tsfeAdminConfig['tsdebug_tree'],
-            'display' => [
-                'times' => (int)$tsfeAdminConfig['tsdebug_displayTimes'],
-                'messages' => (int)$tsfeAdminConfig['tsdebug_displayMessages'],
-                'content' => (int)$tsfeAdminConfig['tsdebug_displayContent'],
-            ],
-            'trackContentRendering' => (int)$tsfeAdminConfig['tsdebug_LR'],
-            'forceTemplateParsing' => (int)$tsfeAdminConfig['tsdebug_forceTemplateParsing'],
-            'typoScriptLog' => $this->renderTypoScriptLog()
-        ]);
+        $view->assignMultiple(
+            [
+                'isEnabled' => (int)$tsfeAdminConfig['display_tsdebug'],
+                'tree' => (int)$tsfeAdminConfig['tsdebug_tree'],
+                'display' => [
+                    'times' => (int)$tsfeAdminConfig['tsdebug_displayTimes'],
+                    'messages' => (int)$tsfeAdminConfig['tsdebug_displayMessages'],
+                    'content' => (int)$tsfeAdminConfig['tsdebug_displayContent'],
+                ],
+                'trackContentRendering' => (int)$tsfeAdminConfig['tsdebug_LR'],
+                'forceTemplateParsing' => (int)$tsfeAdminConfig['tsdebug_forceTemplateParsing'],
+                'typoScriptLog' => $this->renderTypoScriptLog()
+            ]
+        );
 
         return $view->render();
     }
@@ -113,6 +115,31 @@ class TsDebugModule extends AbstractModule
     /**
      * Renders the TypoScript log as string
      *
+use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
+        $view->assignMultiple(
+            [
+                'isEnabled' => (int)$tsfeAdminConfig['display_tsdebug'],
+                'tree' => (int)$tsfeAdminConfig['tsdebug_tree'],
+                'display' => [
+                    'times' => (int)$tsfeAdminConfig['tsdebug_displayTimes'],
+                    'messages' => (int)$tsfeAdminConfig['tsdebug_displayMessages'],
+                    'content' => (int)$tsfeAdminConfig['tsdebug_displayContent'],
+                ],
+                'trackContentRendering' => (int)$tsfeAdminConfig['tsdebug_LR'],
+                'forceTemplateParsing' => (int)$tsfeAdminConfig['tsdebug_forceTemplateParsing'],
+                'typoScriptLog' => $this->renderTypoScriptLog(),
+            ]
+        );
+    public function getIconIdentifier(): string
+    {
+        return 'mimetypes-x-content-template-static';
+    }
+
+        $messageCount = 0;
+        foreach ($this->getTimeTracker()->tsStackLog as $log) {
+            $messageCount += count($log['message'] ?? []);
+        }
+        return $this->getLanguageService()->sL($locallangFileAndPath) . ' (' . $messageCount . ' Messages)';
      * @return string
      */
     private function renderTypoScriptLog(): string
@@ -123,5 +150,13 @@ class TsDebugModule extends AbstractModule
         $timeTracker->printConf['flag_messages'] = $this->getConfigurationOption('displayMessages');
         $timeTracker->printConf['flag_content'] = $this->getConfigurationOption('displayContent');
         return $timeTracker->printTSlog();
+    }
+
+    /**
+     * @return array
+     */
+    public function getJavaScriptFiles(): array
+    {
+        return ['EXT:adminpanel/Resources/Public/JavaScript/Modules/TsDebug.js'];
     }
 }

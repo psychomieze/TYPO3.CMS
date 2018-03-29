@@ -1,6 +1,3 @@
-const editModuleBtnOpenBackend = document.querySelector('.typo3-adminPanel-btn-openBackend');
-editModuleBtnOpenBackend.addEventListener('click', editModuleOnClickHandler);
-
 function editModuleOnClickHandler(event) {
   event.preventDefault();
   const element = event.target;
@@ -16,4 +13,20 @@ function editModuleOnClickHandler(event) {
     vHWin.focus();
   }
   return false;
+}
+
+function initializeEditModule() {
+  const editModuleBtnOpenBackend = document.querySelector('.typo3-adminPanel-btn-openBackend');
+  if (editModuleBtnOpenBackend.addEventListener) {
+    editModuleBtnOpenBackend.addEventListener('click', editModuleOnClickHandler);
+  } else if (editModuleBtnOpenBackend.attachEvent) {
+    editModuleBtnOpenBackend.addEventListener('click', editModuleOnClickHandler);
+  }
+}
+
+
+if (window.addEventListener) {
+  window.addEventListener('load', initializeEditModule, false);
+} else if (window.attachEvent) {
+  window.attachEvent('onload', initializeEditModule);
 }

@@ -29,12 +29,17 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  */
 class EditModule extends AbstractModule
 {
+
+    public function getIconIdentifier(): string
+    {
+        return 'actions-open';
+    }
     /**
      * Creates the content for the "edit" section ("module") of the Admin Panel
      *
      * @return string HTML content for the section. Consists of a string with table-rows with four columns.
      */
-    public function getContent(): string
+    public function getSettings(): string
     {
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $templateNameAndPath = $this->extResources . '/Templates/Modules/Edit.html';
@@ -57,6 +62,23 @@ class EditModule extends AbstractModule
                 't3BeSitenameMd5' => \md5('Typo3Backend-' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']),
             ],
         ]);
+        $view->assignMultiple(
+            [
+                'feEdit' => ExtensionManagementUtility::isLoaded('feedit'),
+                'display' => [
+                    'edit' => $this->getBackendUser()->uc['TSFE_adminConfig']['display_edit'],
+                    'fieldIcons' => $this->getConfigurationOption('displayFieldIcons'),
+                    'displayIcons' => $this->getConfigurationOption('displayIcons'),
+                ],
+                'toolbar' => $this->getBackendUser()->adminPanel->ext_makeToolBar(),
+                'script' => [
+                    'pageUid' => (int)$this->getTypoScriptFrontendController()->page['uid'],
+                    'pageModule' => $this->getPageModule(),
+                    'backendScript' => BackendUtility::getBackendScript(),
+                    't3BeSitenameMd5' => \md5('Typo3Backend-' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']),
+                ],
+            ]
+        );
 
         return $view->render();
     }
@@ -124,18 +146,10 @@ class EditModule extends AbstractModule
     }
 
     /**
-     * @inheritdoc
-     */
-    public function showFormSubmitButton(): bool
-    {
-        return true;
-    }
-
-    /**
      * @return array
      */
     public function getJavaScriptFiles(): array
     {
-        return ['EXT:adminpanel/Resources/Public/JavaScript/Modules/Edit/OpenBackendHandler.js'];
+        return ['EXT:adminpanel/Resources/Public/JavaScript/Modules/Edit.js'];
     }
 }

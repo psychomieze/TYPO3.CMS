@@ -19,12 +19,15 @@ namespace TYPO3\CMS\Adminpanel\Controller;
 use TYPO3\CMS\Adminpanel\Modules\AdminPanelModuleInterface;
 use TYPO3\CMS\Adminpanel\View\AdminPanelView;
 use TYPO3\CMS\Backend\FrontendBackendUserAuthentication;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Fluid\View\StandaloneView;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
@@ -54,21 +57,6 @@ class MainController implements SingletonInterface
                 $module->initializeModule($request);
             }
         }
-    }
-
-    /**
-     * Renders the panel - Is currently called via RenderHook in postProcessOutput
-     *
-     * @todo Still uses the legacy AdminpanelView and should be rewritten to fluid
-     *
-     * @return string
-     */
-    public function render(): string
-    {
-        // handling via legacy functions
-        $adminPanelView = GeneralUtility::makeInstance(AdminPanelView::class);
-        $adminPanelView->setModules($this->modules);
-        return $adminPanelView->display();
     }
 
     /**
@@ -173,4 +161,118 @@ class MainController implements SingletonInterface
     {
         return $GLOBALS['TSFE'];
     }
+
+    /**
+     * Returns a link tag with the admin panel stylesheet
+     * defined using TBE_STYLES
+     *
+     * @return string
+     */
+    protected function getAdminPanelStylesheet(): string
+    {
+        $result = '';
+        if (!empty($GLOBALS['TBE_STYLES']['stylesheets']['admPanel'])) {
+            $stylesheet = GeneralUtility::locationHeaderUrl($GLOBALS['TBE_STYLES']['stylesheets']['admPanel']);
+            $result = '<link rel="stylesheet" type="text/css" href="' .
+                      htmlspecialchars($stylesheet, ENT_QUOTES | ENT_HTML5) . '" />';
+        }
+        return $result;
+    }
+
+    /**
+     * Renders the panel - Is currently called via RenderHook in postProcessOutput
+     *
+     * @return string
+     */
+    public function render(): string
+    {
+        $adminPanelView = GeneralUtility::makeInstance(AdminPanelView::class);
+        $hookObjectContent = $adminPanelView->callDeprecatedHookObject();
+        $resources = $this->getResources();
+        $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
+
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Main.html';
+        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
+        $view->setPartialRootPaths(['EXT:adminpanel/Resources/Private/Partials']);
+        $view->setLayoutRootPaths(['EXT:adminpanel/Resources/Private/Layouts']);
+
+        $view->assignMultiple(
+            [
+                'modules' => $this->modules,
+                'hookObjectContent' => $hookObjectContent,
+            ]
+        );
+
+        return $moduleResources['css'] . $resources . $moduleResources['js'] . $view->render();
+    }
+
+    protected function generateSaveUrl(): string
+    {
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        return (string)$uriBuilder->buildUriFromRoute('ajax_adminPanel_saveForm');
+    }
+
+    /**
+     * @param $cssFileLocation
+     * @return string
+     */
+    protected function getCssTag($cssFileLocation): string
+    {
+        $css = '<link type="text/css" rel="stylesheet" href="' .
+               htmlspecialchars(
+                   PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($cssFileLocation)),
+                   ENT_QUOTES | ENT_HTML5
+               ) .
+               '" media="all" />';
+        return $css;
+    }
+
+    /**
+     * @param $jsFileLocation
+     * @return string
+     */
+    protected function getJsTag($jsFileLocation): string
+    {
+        $js = '<script type="text/javascript" src="' .
+              htmlspecialchars(
+                  PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($jsFileLocation)),
+                  ENT_QUOTES | ENT_HTML5
+              ) .
+              '"></script>';
+        return $js;
+    }
+
+
+    protected function getResources(): string
+    {
+        $jsFileLocation = 'EXT:adminpanel/Resources/Public/JavaScript/AdminPanel.js';
+        $js = $this->getJsTag($jsFileLocation);
+        $cssFileLocation = 'EXT:adminpanel/Resources/Public/Css/panel-new.css';
+        $css = $this->getCssTag($cssFileLocation);
+
+        $inlineJs = '<script type="text/javascript">/*<![CDATA[*/' . GeneralUtility::minifyJavaScript(
+                'var typo3AdminPanelSaveUrl = "' . $this->generateSaveUrl() . '";'
+            ) . '/*]]>*/</script>';
+        return $css . $this->getAdminPanelStylesheet() . $inlineJs . $js;
+    }
+
+    protected function getAdditionalResourcesForModules(array $modules): array
+    {
+        $result = [
+            'js' => '',
+            'css' => ''
+        ];
+        /** @var AdminPanelModuleInterface $module */
+        foreach ($modules as $module) {
+            foreach ($module->getJavaScriptFiles() as $file) {
+                $result['js'] .= $this->getJsTag($file);
+            }
+            foreach ($module->getCssFiles() as $file) {
+                $result['css'] .= $this->getCssTag($file);
+            }
+        }
+        return $result;
+    }
+
 }
