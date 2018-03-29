@@ -16,8 +16,12 @@ namespace TYPO3\CMS\Adminpanel\View;
  */
 
 use TYPO3\CMS\Adminpanel\Modules\AdminPanelModuleInterface;
+use TYPO3\CMS\Adminpanel\Service\EditToolbarService;
+use TYPO3\CMS\Adminpanel\Service\ModuleLoader;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Cache\CacheManager;
+use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\Restriction\FrontendRestrictionContainer;
 use TYPO3\CMS\Core\Imaging\Icon;
@@ -26,6 +30,7 @@ use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\Type\Bitmask\Permission;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Fluid\View\StandaloneView;
 
 /**
  * View class for the admin panel in frontend editing.
@@ -52,11 +57,6 @@ class AdminPanelView
     protected $extJSCODE = '';
 
     /**
-     * @var IconFactory
-     */
-    protected $iconFactory;
-
-    /**
      * Array of adminPanel modules
      *
      * @var AdminPanelModuleInterface[]
@@ -76,9 +76,8 @@ class AdminPanelView
      */
     public function initialize()
     {
-        $this->validateSortAndInitializeModules();
-        $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
-        $this->saveConfiguration();
+        $moduleLoader = GeneralUtility::makeInstance(ModuleLoader::class);
+        $this->modules = $moduleLoader->getModulesFromConfiguration();
 
         foreach ($this->modules as $module) {
             if ($module->isEnabled()) {
@@ -103,206 +102,91 @@ class AdminPanelView
         return $result;
     }
 
+
+    public function display(): string
+    {
+        $hookObjectContent = $this->callDeprecatedHookObject();
+        $resources = $this->getResources();
+        $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
+
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Main.html';
+        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
+        $view->setPartialRootPaths(['EXT:adminpanel/Resources/Private/Partials']);
+        $view->setLayoutRootPaths(['EXT:adminpanel/Resources/Private/Layouts']);
+
+        $view->assignMultiple(
+            [
+                'modules' => $this->modules,
+                'hookObjectContent' => $hookObjectContent,
+            ]
+        );
+
+        return $moduleResources['css'] . $resources . $moduleResources['js'] . $view->render();
+    }
+
+    protected function generateSaveUrl(): string
+    {
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        return (string)$uriBuilder->buildUriFromRoute('ajax_adminPanel_saveForm');
+    }
+
     /**
-     * Render a single module with header panel
-     *
-     * @param \TYPO3\CMS\Frontend\AdminPanel\AdminPanelModuleInterface $module
+     * @param $cssFileLocation
      * @return string
      */
-    protected function getModule(AdminPanelModuleInterface $module): string
+    protected function getCssTag($cssFileLocation): string
     {
-        $output = [];
-
-        if ($module->isEnabled()) {
-            $output[] = '<div class="typo3-adminPanel-section typo3-adminPanel-section-' .
-                        ($module->isOpen() ? 'open' : 'closed') .
-                        '">';
-            $output[] = '  <div class="typo3-adminPanel-section-title">';
-            $output[] = '    ' . $this->getSectionOpenerLink($module);
-            $output[] = '  </div>';
-            if ($module->isOpen()) {
-                $output[] = '<div class="typo3-adminPanel-section-body">';
-                $output[] = '  ' . $module->getContent();
-                $output[] = '</div>';
-            }
-            $output[] = '</div>';
-        }
-
-        foreach ($module->getJavaScriptFiles() as $javaScriptFile) {
-            $output[] =
-                '<script src="' .
-                PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($javaScriptFile)) .
-                '"></script>';
-        }
-
-        return implode('', $output);
+        $css = '<link type="text/css" rel="stylesheet" href="' .
+               htmlspecialchars(PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($cssFileLocation))) .
+               '" media="all" />';
+        return $css;
     }
 
     /**
-     * Creates and returns the HTML code for the Admin Panel in the TSFE frontend.
-     *
-     * @throws \UnexpectedValueException
-     * @return string HTML for the Admin Panel
+     * @param $jsFileLocation
+     * @return string
      */
-    public function display()
+    protected function getJsTag($jsFileLocation): string
     {
-        $this->getLanguageService()->includeLLFile('EXT:lang/Resources/Private/Language/locallang_tsfe.xlf');
-
-        $moduleContent = '';
-
-        if ($this->isAdminPanelActivated()) {
-            foreach ($this->modules as $module) {
-                if ($module->isOpen()) {
-                    $this->extNeedUpdate = !$this->extNeedUpdate ? $module->showFormSubmitButton() : true;
-                    $this->extJSCODE .= $module->getAdditionalJavaScriptCode();
-                }
-                $moduleContent .= $this->getModule($module);
-            }
-
-            foreach (
-                $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_adminpanel.php']['extendAdminPanel']
-                ??
-                [] as $className
-            ) {
-                trigger_error(
-                    'The hook $GLOBALS[\'TYPO3_CONF_VARS\'][\'SC_OPTIONS\'][\'tslib/class.tslib_adminpanel.php\'][\'extendAdminPanel\'] is deprecated, register an AdminPanelModule instead.',
-                    E_USER_DEPRECATED
-                );
-                $hookObject = GeneralUtility::makeInstance($className);
-                if (!$hookObject instanceof AdminPanelViewHookInterface) {
-                    throw new \UnexpectedValueException(
-                        $className . ' must implement interface ' . AdminPanelViewHookInterface::class,
-                        1311942539
-                    );
-                }
-                $content = $hookObject->extendAdminPanel($moduleContent, $this);
-                if ($content) {
-                    $moduleContent .= '<div class="typo3-adminPanel-section typo3-adminPanel-section-open">';
-                    $moduleContent .= '  <div class="typo3-adminPanel-section-body">';
-                    $moduleContent .= '    ' . $content;
-                    $moduleContent .= '  </div>';
-                    $moduleContent .= '</div>';
-                }
-            }
-        }
-
-        $output = [];
-        $output[] = '<!-- TYPO3 Admin panel start -->';
-        $output[] = '<a id="TSFE_ADMIN_PANEL"></a>';
-        $output[] = '<form id="TSFE_ADMIN_PANEL_FORM" name="TSFE_ADMIN_PANEL_FORM" style="display: none;" action="' . htmlspecialchars(GeneralUtility::getIndpEnv('TYPO3_REQUEST_SCRIPT')) . '#TSFE_ADMIN_PANEL" method="get" onsubmit="document.forms.TSFE_ADMIN_PANEL_FORM[\'TSFE_ADMIN_PANEL[DUMMY]\'].value=Math.random().toString().substring(2,8)">';
-        if (!GeneralUtility::_GET('id')) {
-            $output[] = '<input type="hidden" name="id" value="' . $this->getTypoScriptFrontendController()->id . '" />';
-        }
-        // The dummy field is needed for Firefox: to force a page reload on submit
-        // which must change the form value with JavaScript (see "onsubmit" attribute of the "form" element")
-        $output[] = '  <input type="hidden" name="TSFE_ADMIN_PANEL[DUMMY]" value="" />';
-        foreach (GeneralUtility::_GET() as $key => $value) {
-            if ($key !== 'TSFE_ADMIN_PANEL') {
-                if (is_array($value)) {
-                    $output[] = $this->getHiddenFields($key, $value);
-                } else {
-                    $output[] = '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '" />';
-                }
-            }
-        }
-        $output[] = '  <input type="hidden" name="TSFE_ADMIN_PANEL[display_top]" value="0" />';
-        $output[] = '  <input id="typo3AdminPanelEnable" type="checkbox" onchange="document.TSFE_ADMIN_PANEL_FORM.submit();" name="TSFE_ADMIN_PANEL[display_top]" value="1"' .
-                    ($this->isAdminPanelActivated() ? ' checked="checked"' : '') .
-                    '/>';
-        $output[] = '  <input id="typo3AdminPanelCollapse" type="checkbox" value="1" />';
-        $output[] = '  <div class="typo3-adminPanel typo3-adminPanel-state-' .
-                    ($this->isAdminPanelActivated() ? 'open' : 'closed') .
-                    '">';
-        $output[] = '    <div class="typo3-adminPanel-header">';
-        $output[] = '      <span class="typo3-adminPanel-header-title">' . $this->extGetLL('adminPanelTitle') . '</span>';
-        $output[] = '      <span class="typo3-adminPanel-header-user">' . htmlspecialchars($this->getBackendUser()->user['username']) . '</span>';
-        $output[] = '      <label for="typo3AdminPanelEnable" class="typo3-adminPanel-header-enable">';
-        $output[] = '        <span class="typo3-adminPanel-header-enable-enabled">';
-        $output[] = '          ' . $this->iconFactory->getIcon('actions-edit-hide', Icon::SIZE_SMALL)->render('inline');
-        $output[] = '        </span>';
-        $output[] = '        <span class="typo3-adminPanel-header-enable-disabled">';
-        $output[] = '          ' . $this->iconFactory->getIcon('actions-edit-unhide', Icon::SIZE_SMALL)->render('inline');
-        $output[] = '        </span>';
-        $output[] = '      </label>';
-        $output[] = '      <label for="typo3AdminPanelCollapse" class="typo3-adminPanel-header-collapse">';
-        $output[] = '        <span class="typo3-adminPanel-header-collapse-enabled">';
-        $output[] = '          ' . $this->iconFactory->getIcon('actions-view-list-collapse', Icon::SIZE_SMALL)->render('inline');
-        $output[] = '        </span>';
-        $output[] = '        <span class="typo3-adminPanel-header-collapse-disabled">';
-        $output[] = '          ' . $this->iconFactory->getIcon('actions-view-list-expand', Icon::SIZE_SMALL)->render('inline');
-        $output[] = '        </span>';
-        $output[] = '      </label>';
-        $output[] = '    </div>';
-        if ($moduleContent && $this->extNeedUpdate) {
-            $output[] = '<div class="typo3-adminPanel-actions">';
-            $output[] = '  <input class="typo3-adminPanel-btn typo3-adminPanel-btn-dark" type="submit" value="' . $this->extGetLL('update') . '" />';
-            $output[] = '</div>';
-        }
-        $output[] = '    <div class="typo3-adminPanel-body">';
-        $output[] = '      ' . $moduleContent;
-        $output[] = '    </div>';
-        $output[] = '  </div>';
-        $output[] = '</form>';
-        if ($this->getBackendUser()->uc['TSFE_adminConfig']['display_top']) {
-            $evalFieldJavaScriptFile = GeneralUtility::getFileAbsFileName('EXT:backend/Resources/Public/JavaScript/jsfunc.evalfield.js');
-            $output[] = '<script type="text/javascript" src="' . htmlspecialchars(PathUtility::getAbsoluteWebPath($evalFieldJavaScriptFile)) . '"></script>';
-            $output[] = '<script type="text/javascript">/*<![CDATA[*/' . GeneralUtility::minifyJavaScript('
-				var evalFunc = new evalFunc();
-					// TSFEtypo3FormFieldSet()
-				function TSFEtypo3FormFieldSet(theField, evallist, is_in, checkbox, checkboxValue) {	//
-					var theFObj = new evalFunc_dummy (evallist,is_in, checkbox, checkboxValue);
-					var theValue = document.TSFE_ADMIN_PANEL_FORM[theField].value;
-					if (checkbox && theValue==checkboxValue) {
-						document.TSFE_ADMIN_PANEL_FORM[theField+"_hr"].value="";
-						alert(theField);
-						document.TSFE_ADMIN_PANEL_FORM[theField+"_cb"].checked = "";
-					} else {
-						document.TSFE_ADMIN_PANEL_FORM[theField+"_hr"].value = evalFunc.outputObjValue(theFObj, theValue);
-						if (document.TSFE_ADMIN_PANEL_FORM[theField+"_cb"]) {
-							document.TSFE_ADMIN_PANEL_FORM[theField+"_cb"].checked = "on";
-						}
-					}
-				}
-					// TSFEtypo3FormFieldGet()
-				function TSFEtypo3FormFieldGet(theField, evallist, is_in, checkbox, checkboxValue, checkbox_off) {	//
-					var theFObj = new evalFunc_dummy (evallist,is_in, checkbox, checkboxValue);
-					if (checkbox_off) {
-						document.TSFE_ADMIN_PANEL_FORM[theField].value=checkboxValue;
-					}else{
-						document.TSFE_ADMIN_PANEL_FORM[theField].value = evalFunc.evalObjValue(theFObj, document.TSFE_ADMIN_PANEL_FORM[theField+"_hr"].value);
-					}
-					TSFEtypo3FormFieldSet(theField, evallist, is_in, checkbox, checkboxValue);
-				}') . '/*]]>*/</script>';
-            $output[] = '<script language="javascript" type="text/javascript">' . $this->extJSCODE . '</script>';
-        }
-        $cssFileLocation = GeneralUtility::getFileAbsFileName('EXT:adminpanel/Resources/Public/Css/adminpanel.css');
-        $output[] = '<link type="text/css" rel="stylesheet" href="' . htmlspecialchars(PathUtility::getAbsoluteWebPath($cssFileLocation)) . '" media="all" />';
-        $output[] = $this->getAdminPanelStylesheet();
-        $output[] = '<!-- TYPO3 admin panel end -->';
-
-        return implode('', $output);
+        $js = '<script type="text/javascript" src="' .
+              htmlspecialchars(PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($jsFileLocation))) .
+              '"></script>';
+        return $js;
     }
 
-    /**
-     * Fetches recursively all GET parameters as hidden fields.
-     * Called from display()
-     *
-     * @param string $key Current key
-     * @param array $val Current value
-     * @return string Hidden fields HTML-code
-     * @see display()
-     */
-    protected function getHiddenFields($key, array $val)
+
+    protected function getResources(): string
     {
-        $out = '';
-        foreach ($val as $k => $v) {
-            if (is_array($v)) {
-                $out .= $this->getHiddenFields($key . '[' . $k . ']', $v);
-            } else {
-                $out .= '<input type="hidden" name="' . htmlspecialchars($key) . '[' . htmlspecialchars($k) . ']" value="' . htmlspecialchars($v) . '">' . LF;
+        $jsFileLocation = 'EXT:adminpanel/Resources/Public/JavaScript/AdminPanel.js';
+        $js = $this->getJsTag($jsFileLocation);
+        $cssFileLocation = 'EXT:adminpanel/Resources/Public/Css/panel-new.css';
+        $css = $this->getCssTag($cssFileLocation);
+
+        $inlineJs = '<script type="text/javascript">/*<![CDATA[*/' . GeneralUtility::minifyJavaScript(
+                'var typo3AdminPanelSaveUrl = "' . $this->generateSaveUrl() . '";'
+            ) . '/*]]>*/</script>';
+        return $css . $this->getAdminPanelStylesheet() . $inlineJs . $js;
+    }
+
+    protected function getAdditionalResourcesForModules(array $modules): array
+    {
+        $result = [
+            'js' => '',
+            'css' => ''
+        ];
+        /** @var AdminPanelModuleInterface $module */
+        foreach ($modules as $module) {
+            $jsFiles = $module->getJavaScriptFiles();
+            foreach ($jsFiles as $file) {
+                $result['js'] .= $this->getJsTag($file);
+            }
+            $cssFiles = $module->getCssFiles();
+            foreach ($cssFiles as $file) {
+                $result['css'] .= $this->getCssTag($file);
             }
         }
-        return $out;
+        return $result;
     }
 
     /**
@@ -316,291 +200,6 @@ class AdminPanelView
         return $this->getBackendUser()->uc['TSFE_adminConfig']['display_top'] ?? false;
     }
 
-    /**
-     * Save admin panel configuration to backend user UC
-     */
-    protected function saveConfiguration()
-    {
-        $input = GeneralUtility::_GP('TSFE_ADMIN_PANEL');
-        $beUser = $this->getBackendUser();
-        if (is_array($input)) {
-            // Setting
-            $beUser->uc['TSFE_adminConfig'] = array_merge(
-                !is_array($beUser->uc['TSFE_adminConfig']) ? [] : $beUser->uc['TSFE_adminConfig'],
-                $input
-            );
-            unset($beUser->uc['TSFE_adminConfig']['action']);
-
-            foreach ($this->modules as $module) {
-                if ($module->isEnabled() && $module->isOpen()) {
-                    $module->onSubmit($input);
-                }
-            }
-            // Saving
-            $beUser->writeUC();
-            // Flush fluid template cache
-            $cacheManager = new CacheManager();
-            $cacheManager->setCacheConfigurations($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']);
-            $cacheManager->getCache('fluid_template')->flush();
-        }
-    }
-
-    /**
-     * Validates, sorts and initiates the registered modules
-     *
-     * @throws \RuntimeException
-     */
-    protected function validateSortAndInitializeModules(): void
-    {
-        $modules = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] ?? [];
-        if (empty($modules)) {
-            return;
-        }
-        foreach ($modules as $identifier => $configuration) {
-            if (empty($configuration) || !is_array($configuration)) {
-                throw new \RuntimeException(
-                    'Missing configuration for module "' . $identifier . '".',
-                    1519490105
-                );
-            }
-            if (!is_string($configuration['module']) ||
-                empty($configuration['module']) ||
-                !class_exists($configuration['module']) ||
-                !is_subclass_of(
-                    $configuration['module'],
-                    AdminPanelModuleInterface::class
-                )) {
-                throw new \RuntimeException(
-                    'The module "' .
-                    $identifier .
-                    '" defines an invalid module class. Ensure the class exists and implements the "' .
-                    AdminPanelModuleInterface::class .
-                    '".',
-                    1519490112
-                );
-            }
-        }
-
-        $orderedModules = GeneralUtility::makeInstance(DependencyOrderingService::class)->orderByDependencies(
-            $modules
-        );
-
-        foreach ($orderedModules as $module) {
-            $this->modules[] = GeneralUtility::makeInstance($module['module']);
-        }
-    }
-
-    /*****************************************************
-     * Admin Panel Layout Helper functions
-     ****************************************************/
-
-    /**
-     * Wraps a string in a link which will open/close a certain part of the Admin Panel
-     *
-     * @param \TYPO3\CMS\Frontend\AdminPanel\AdminPanelModuleInterface $module
-     * @return string
-     */
-    protected function getSectionOpenerLink(AdminPanelModuleInterface $module): string
-    {
-        $identifier = $module->getIdentifier();
-        $onclick = 'document.TSFE_ADMIN_PANEL_FORM[' .
-                   GeneralUtility::quoteJSvalue('TSFE_ADMIN_PANEL[display_' . $identifier . ']') .
-                   '].value=' .
-                   ($this->getBackendUser()->uc['TSFE_adminConfig']['display_' . $identifier] ? '0' : '1') .
-                   ';document.TSFE_ADMIN_PANEL_FORM.submit();return false;';
-
-        $output = [];
-        $output[] = '<span class="typo3-adminPanel-section-title-identifier"></span>';
-        $output[] = '<a href="javascript:void(0)" onclick="' . htmlspecialchars($onclick) . '">';
-        $output[] = '  ' . htmlspecialchars($module->getLabel());
-        $output[] = '</a>';
-        $output[] = '<input type="hidden" name="TSFE_ADMIN_PANEL[display_' .
-                    $identifier .
-                    ']" value="' .
-                    (int)$module->isOpen() .
-                    '" />';
-
-        return implode('', $output);
-    }
-
-    /**
-     * Creates the tool bar links for the "edit" section of the Admin Panel.
-     *
-     * @return string A string containing images wrapped in <a>-tags linking them to proper functions.
-     */
-    public function ext_makeToolBar()
-    {
-        $tsfe = $this->getTypoScriptFrontendController();
-        //  If mod.newContentElementWizard.override is set, use that extension's create new content wizard instead:
-        $tsConfig = BackendUtility::getModTSconfig($tsfe->page['uid'], 'mod');
-        $moduleName = $tsConfig['properties']['newContentElementWizard.']['override'] ?? 'new_content_element';
-        /** @var \TYPO3\CMS\Backend\Routing\UriBuilder $uriBuilder */
-        $uriBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class);
-        $perms = $this->getBackendUser()->calcPerms($tsfe->page);
-        $langAllowed = $this->getBackendUser()->checkLanguageAccess($tsfe->sys_language_uid);
-        $id = $tsfe->id;
-        $returnUrl = GeneralUtility::getIndpEnv('REQUEST_URI');
-        $classes = 'typo3-adminPanel-btn typo3-adminPanel-btn-default';
-        $output = [];
-        $output[] = '<div class="typo3-adminPanel-form-group">';
-        $output[] = '  <div class="typo3-adminPanel-btn-group" role="group">';
-
-        // History
-        $link = (string)$uriBuilder->buildUriFromRoute(
-            'record_history',
-            [
-                'element' => 'pages:' . $id,
-                'returnUrl' => $returnUrl
-            ]
-        );
-        $title = $this->extGetLL('edit_recordHistory');
-        $output[] = '<a class="' . $classes . '" href="' . htmlspecialchars($link) . '#latest" title="' . $title . '">';
-        $output[] = '  ' . $this->iconFactory->getIcon('actions-document-history-open', Icon::SIZE_SMALL)->render();
-        $output[] = '</a>';
-
-        // New Content
-        if ($perms & Permission::CONTENT_EDIT && $langAllowed) {
-            $linkParameters = [
-                'id' => $id,
-                'returnUrl' => $returnUrl,
-            ];
-            if (!empty($tsfe->sys_language_uid)) {
-                $linkParameters['sys_language_uid'] = $tsfe->sys_language_uid;
-            }
-            $link = (string)$uriBuilder->buildUriFromRoute($moduleName, $linkParameters);
-            $icon = $this->iconFactory->getIcon('actions-add', Icon::SIZE_SMALL)->render();
-            $title = $this->extGetLL('edit_newContentElement');
-            $output[] = '<a class="' . $classes . '" href="' . htmlspecialchars($link) . '" title="' . $title . '">';
-            $output[] = '  ' . $icon;
-            $output[] = '</a>';
-        }
-
-        // Move Page
-        if ($perms & Permission::PAGE_EDIT) {
-            $link = (string)$uriBuilder->buildUriFromRoute(
-                'move_element',
-                [
-                    'table' => 'pages',
-                    'uid' => $id,
-                    'returnUrl' => $returnUrl
-                ]
-            );
-            $icon = $this->iconFactory->getIcon('actions-document-move', Icon::SIZE_SMALL)->render();
-            $title = $this->extGetLL('edit_move_page');
-            $output[] = '<a class="' . $classes . '" href="' . htmlspecialchars($link) . '" title="' . $title . '">';
-            $output[] = '  ' . $icon;
-            $output[] = '</a>';
-        }
-
-        // New Page
-        if ($perms & Permission::PAGE_NEW) {
-            $link = (string)$uriBuilder->buildUriFromRoute(
-                'db_new',
-                [
-                    'id' => $id,
-                    'pagesOnly' => 1,
-                    'returnUrl' => $returnUrl
-                ]
-            );
-            $icon = $this->iconFactory->getIcon('actions-page-new', Icon::SIZE_SMALL)->render();
-            $title = $this->extGetLL('edit_newPage');
-            $output[] = '<a class="' . $classes . '" href="' . htmlspecialchars($link) . '" title="' . $title . '">';
-            $output[] = '  ' . $icon;
-            $output[] = '</a>';
-        }
-
-        // Edit Page
-        if ($perms & Permission::PAGE_EDIT) {
-            $link = (string)$uriBuilder->buildUriFromRoute(
-                'record_edit',
-                [
-                    'edit[pages][' . $id . ']' => 'edit',
-                    'noView' => 1,
-                    'returnUrl' => $returnUrl
-                ]
-            );
-            $icon = $this->iconFactory->getIcon('actions-page-open', Icon::SIZE_SMALL)->render();
-            $title = $this->extGetLL('edit_editPageProperties');
-            $output[] = '<a class="' . $classes . '" href="' . htmlspecialchars($link) . '" title="' . $title . '">';
-            $output[] = '  ' . $icon;
-            $output[] = '</a>';
-        }
-
-        // Edit Page Overlay
-        if ($perms & Permission::PAGE_EDIT && $tsfe->sys_language_uid && $langAllowed) {
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getQueryBuilderForTable('pages');
-            $queryBuilder->setRestrictions(GeneralUtility::makeInstance(FrontendRestrictionContainer::class));
-            $row = $queryBuilder
-                ->select('uid', 'pid', 't3ver_state')
-                ->from('pages')
-                ->where(
-                    $queryBuilder->expr()->eq(
-                        $GLOBALS['TCA']['pages']['ctrl']['transOrigPointerField'],
-                        $queryBuilder->createNamedParameter($id, \PDO::PARAM_INT)
-                    ),
-                    $queryBuilder->expr()->eq(
-                        $GLOBALS['TCA']['pages']['ctrl']['languageField'],
-                        $queryBuilder->createNamedParameter($tsfe->sys_language_uid, \PDO::PARAM_INT)
-                    )
-                )
-                ->setMaxResults(1)
-                ->execute()
-                ->fetch();
-            $tsfe->sys_page->versionOL('pages', $row);
-            if (is_array($row)) {
-                $link = (string)$uriBuilder->buildUriFromRoute(
-                    'record_edit',
-                    [
-                        'edit[pages][' . $row['uid'] . ']' => 'edit',
-                        'noView' => 1,
-                        'returnUrl' => $returnUrl
-                    ]
-                );
-                $icon = $this->iconFactory->getIcon('mimetypes-x-content-page-language-overlay', Icon::SIZE_SMALL)->render();
-                $title = $this->extGetLL('edit_editPageOverlay');
-                $output[] = '<a class="' . $classes . '" href="' . htmlspecialchars($link) . '" title="' . $title . '">';
-                $output[] = '  ' . $icon;
-                $output[] = '</a>';
-            }
-        }
-
-        // Open list view
-        if ($this->getBackendUser()->check('modules', 'web_list')) {
-            $link = (string)$uriBuilder->buildUriFromRoute(
-                'web_list',
-                [
-                    'id' => $id,
-                    'returnUrl' => GeneralUtility::getIndpEnv('REQUEST_URI')
-                ]
-            );
-            $icon = $this->iconFactory->getIcon('actions-system-list-open', Icon::SIZE_SMALL)->render();
-            $title = $this->extGetLL('edit_db_list');
-            $output[] = '<a class="' . $classes . '" href="' . htmlspecialchars($link) . '" title="' . $title . '">';
-            $output[] = '  ' . $icon;
-            $output[] = '</a>';
-        }
-
-        $output[] = '  </div>';
-        $output[] = '</div>';
-        return implode('', $output);
-    }
-
-    /**
-     * Translate given key
-     *
-     * @param string $key Key for a label in the $LOCAL_LANG array of "sysext/lang/Resources/Private/Language/locallang_tsfe.xlf
-     * @param bool $convertWithHtmlspecialchars If TRUE the language-label will be sent through htmlspecialchars
-     * @return string The value for the $key
-     */
-    protected function extGetLL($key, $convertWithHtmlspecialchars = true)
-    {
-        $labelStr = $this->getLanguageService()->getLL($key);
-        if ($convertWithHtmlspecialchars) {
-            $labelStr = htmlspecialchars($labelStr);
-        }
-        return $labelStr;
-    }
 
     /**
      * Returns LanguageService
@@ -633,6 +232,148 @@ class AdminPanelView
     /*****************************************************
      * Admin Panel: Deprecated API
      ****************************************************/
+
+    /**
+     * Backwards compatibility method ensuring hook still gets the same content as before
+     *
+     * @deprecated since TYPO3 v9 - remove when hook can be removed
+     * @return string
+     */
+    protected function callDeprecatedHookObject(): string
+    {
+        $moduleContent = '';
+        if ($this->isAdminPanelActivated()) {
+            foreach ($this->modules as $module) {
+                $moduleContent .= $this->getModule($module);
+            }
+
+            foreach (
+                $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['tslib/class.tslib_adminpanel.php']['extendAdminPanel']
+                ??
+                [] as $className
+            ) {
+                trigger_error(
+                    'The hook $GLOBALS[\'TYPO3_CONF_VARS\'][\'SC_OPTIONS\'][\'tslib/class.tslib_adminpanel.php\'][\'extendAdminPanel\'] is deprecated, register an AdminPanelModule instead.',
+                    E_USER_DEPRECATED
+                );
+                $hookObject = GeneralUtility::makeInstance($className);
+                if (!$hookObject instanceof AdminPanelViewHookInterface) {
+                    throw new \UnexpectedValueException(
+                        $className . ' must implement interface ' . AdminPanelViewHookInterface::class,
+                        1311942539
+                    );
+                }
+                $content = $hookObject->extendAdminPanel($moduleContent, $this);
+                if ($content) {
+                    $moduleContent .= '<div class="typo3-adminPanel-section typo3-adminPanel-section-open">';
+                    $moduleContent .= '  <div class="typo3-adminPanel-section-body">';
+                    $moduleContent .= '    ' . $content;
+                    $moduleContent .= '  </div>';
+                    $moduleContent .= '</div>';
+                }
+            }
+        }
+        return $moduleContent;
+    }
+
+    /**
+     * Render a single module with header panel
+     *
+     * @deprecated Since TYPO3 v9 - only used in deprecated hook call (which triggers the corresponding deprecation error)
+     * @param AdminPanelModuleInterface $module
+     * @return string
+     */
+    protected function getModule(AdminPanelModuleInterface $module): string
+    {
+        $output = [];
+
+        if ($module->isEnabled()) {
+            $output[] = '<div class="typo3-adminPanel-section typo3-adminPanel-section-open">';
+            $output[] = '  <div class="typo3-adminPanel-section-title">';
+            $output[] = '    ' . $this->getSectionOpenerLink($module);
+            $output[] = '  </div>';
+            $output[] = '<div class="typo3-adminPanel-section-body">';
+            $output[] = '  ' . $module->getContent();
+            $output[] = '</div>';
+            $output[] = '</div>';
+        }
+
+        foreach ($module->getJavaScriptFiles() as $javaScriptFile) {
+            $output[] =
+                '<script src="' .
+                PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($javaScriptFile)) .
+                '"></script>';
+        }
+
+        return implode('', $output);
+    }
+
+    /*****************************************************
+     * Admin Panel Layout Helper functions
+     ****************************************************/
+
+    /**
+     * Wraps a string in a link which will open/close a certain part of the Admin Panel
+     *
+     * @deprecated Since TYPO3 v9 - only used in deprecated hook call (which triggers the corresponding deprecation error)
+     * @param AdminPanelModuleInterface $module
+     * @return string
+     */
+    protected function getSectionOpenerLink(AdminPanelModuleInterface $module): string
+    {
+        $identifier = $module->getIdentifier();
+        $onclick = 'document.TSFE_ADMIN_PANEL_FORM[' .
+                   GeneralUtility::quoteJSvalue('TSFE_ADMIN_PANEL[display_' . $identifier . ']') .
+                   '].value=' .
+                   ($this->getBackendUser()->uc['TSFE_adminConfig']['display_' . $identifier] ? '0' : '1') .
+                   ';document.TSFE_ADMIN_PANEL_FORM.submit();return false;';
+
+        $output = [];
+        $output[] = '<span class="typo3-adminPanel-section-title-identifier"></span>';
+        $output[] = '<a href="javascript:void(0)" onclick="' . htmlspecialchars($onclick) . '">';
+        $output[] = '  ' . htmlspecialchars($module->getLabel());
+        $output[] = '</a>';
+        $output[] = '<input type="hidden" name="TSFE_ADMIN_PANEL[display_' .
+                    $identifier .
+                    ']" value="' .
+                    1 .
+                    '" />';
+
+        return implode('', $output);
+    }
+
+    /**
+     * Creates the tool bar links for the "edit" section of the Admin Panel.
+     *
+     * @deprecated Since TYPO3 v9 - use EditToolbarService instead or create buttons via fluid
+     * @return string A string containing images wrapped in <a>-tags linking them to proper functions.
+     */
+    public function ext_makeToolBar(): string
+    {
+        trigger_error(
+            'Deprecated since TYPO3 v9, use fluid and backend uri builder to create a toolbar',
+            \E_USER_DEPRECATED
+        );
+        $service = GeneralUtility::makeInstance(EditToolbarService::class);
+        return $service->create();
+    }
+
+    /**
+     * Translate given key
+     *
+     * @param string $key Key for a label in the $LOCAL_LANG array of "sysext/lang/Resources/Private/Language/locallang_tsfe.xlf
+     * @param bool $convertWithHtmlspecialchars If TRUE the language-label will be sent through htmlspecialchars
+     * @deprecated Since TYPO3 v9 - only used in deprecated methods
+     * @return string The value for the $key
+     */
+    protected function extGetLL($key, $convertWithHtmlspecialchars = true)
+    {
+        $labelStr = $this->getLanguageService()->getLL($key);
+        if ($convertWithHtmlspecialchars) {
+            $labelStr = htmlspecialchars($labelStr);
+        }
+        return $labelStr;
+    }
 
     /**
      * Add an additional stylesheet
@@ -681,7 +422,28 @@ class AdminPanelView
             'Deprecated since TYPO3 v9 - implement AdminPanelModules via the new API (see AdminPanelModuleInterface)',
             E_USER_DEPRECATED
         );
-        $this->saveConfiguration();
+        $input = GeneralUtility::_GP('TSFE_ADMIN_PANEL');
+        $beUser = $this->getBackendUser();
+        if (is_array($input)) {
+            // Setting
+            $beUser->uc['TSFE_adminConfig'] = array_merge(
+                !is_array($beUser->uc['TSFE_adminConfig']) ? [] : $beUser->uc['TSFE_adminConfig'],
+                $input
+            );
+            unset($beUser->uc['TSFE_adminConfig']['action']);
+
+            foreach ($this->modules as $module) {
+                if ($module->isEnabled()) {
+                    $module->onSubmit($input);
+                }
+            }
+            // Saving
+            $beUser->writeUC();
+            // Flush fluid template cache
+            $cacheManager = new CacheManager();
+            $cacheManager->setCacheConfigurations($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']);
+            $cacheManager->getCache('fluid_template')->flush();
+        }
     }
 
     /**
@@ -707,9 +469,10 @@ class AdminPanelView
         // deprecated
         if (
             $sectionName === 'edit' && (
-                $val === 'displayIcons' && $beUser->extAdminConfig['module.']['edit.']['forceDisplayIcons'] ||
-                $val === 'displayFieldIcons' && $beUser->extAdminConfig['module.']['edit.']['forceDisplayFieldIcons'] ||
-                $val === 'editNoPopup' && $beUser->extAdminConfig['module.']['edit.']['forceNoPopup']
+                ($val === 'displayIcons' && $beUser->extAdminConfig['module.']['edit.']['forceDisplayIcons']) ||
+                ($val === 'displayFieldIcons' &&
+                 $beUser->extAdminConfig['module.']['edit.']['forceDisplayFieldIcons']) ||
+                ($val === 'editNoPopup' && $beUser->extAdminConfig['module.']['edit.']['forceNoPopup'])
             )
         ) {
             return true;

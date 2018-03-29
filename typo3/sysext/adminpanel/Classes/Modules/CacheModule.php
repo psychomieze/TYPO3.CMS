@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TYPO3\CMS\Adminpanel\Modules;
 
@@ -23,6 +23,31 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 class CacheModule extends AbstractModule
 {
+
+    public function getIconIdentifier():string
+    {
+        return 'apps-toolbar-menu-cache';
+    }
+
+    public function getSettings(): string
+    {
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $templateNameAndPath = $this->extResources . '/Templates/Modules/Cache.html';
+        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
+        $view->setPartialRootPaths([$this->extResources . '/Partials']);
+
+        $view->assignMultiple(
+            [
+                'isEnabled' => $this->getBackendUser()->uc['TSFE_adminConfig']['display_cache'],
+                'noCache' => $this->getBackendUser()->uc['TSFE_adminConfig']['cache_noCache'],
+                'cacheLevels' => $this->getBackendUser()->uc['TSFE_adminConfig']['cache_clearCacheLevels'],
+                'currentId' => $this->getTypoScriptFrontendController()->id,
+            ]
+        );
+
+        return $view->render();
+    }
+
     /**
      * Creates the content for the "cache" section ("module") of the Admin Panel
      *
@@ -30,20 +55,9 @@ class CacheModule extends AbstractModule
      */
     public function getContent(): string
     {
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $templateNameAndPath = $this->extResources . '/Templates/Modules/Cache.html';
-        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
-        $view->setPartialRootPaths([$this->extResources . '/Partials']);
-
-        $view->assignMultiple([
-            'isEnabled' => $this->getBackendUser()->uc['TSFE_adminConfig']['display_cache'],
-            'noCache' => $this->getBackendUser()->uc['TSFE_adminConfig']['cache_noCache'],
-            'cacheLevels' => $this->getBackendUser()->uc['TSFE_adminConfig']['cache_clearCacheLevels'],
-            'currentId' => $this->getTypoScriptFrontendController()->id
-        ]);
-
-        return $view->render();
+        return '';
     }
+
 
     /**
      * @inheritdoc
@@ -91,14 +105,6 @@ class CacheModule extends AbstractModule
                     ) . $theStartId
                 );
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function showFormSubmitButton(): bool
-    {
-        return true;
     }
 
     /**

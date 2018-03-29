@@ -28,6 +28,11 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  */
 class PreviewModule extends AbstractModule
 {
+
+    public function getIconIdentifier():string
+    {
+        return 'actions-preview';
+    }
     /**
      * Force the preview panel to be opened
      *
@@ -35,22 +40,7 @@ class PreviewModule extends AbstractModule
      */
     protected $forceOpen = false;
 
-    /**
-     * @inheritdoc
-     */
-    public function getAdditionalJavaScriptCode(): string
-    {
-        return 'TSFEtypo3FormFieldSet("TSFE_ADMIN_PANEL[preview_simulateDate]", "datetime", "", 0, 0);';
-    }
-
-    /**
-     * Creates the content for the "preview" section ("module") of the Admin Panel
-     *
-     * @return string HTML content for the section. Consists of a string with table-rows with four columns.
-     * @see display()
-     * @throws \InvalidArgumentException
-     */
-    public function getContent(): string
+    public function getSettings(): string
     {
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $templateNameAndPath = $this->extResources . '/Templates/Modules/Preview.html';
@@ -111,19 +101,6 @@ class PreviewModule extends AbstractModule
     }
 
     /**
-     * Force module to be shown if either time or users/groups are simulated
-     *
-     * @return bool
-     */
-    public function isShown(): bool
-    {
-        if ($this->forceOpen) {
-            return true;
-        }
-        return parent::isShown();
-    }
-
-    /**
      * Clear page cache if fluid debug output is enabled
      *
      * @param array $input
@@ -144,13 +121,6 @@ class PreviewModule extends AbstractModule
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function showFormSubmitButton(): bool
-    {
-        return true;
-    }
 
     /**
      * @return TypoScriptFrontendController

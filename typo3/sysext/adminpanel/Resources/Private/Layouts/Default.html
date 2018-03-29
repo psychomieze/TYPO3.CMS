@@ -1,0 +1,15 @@
+<html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers" data-namespace-typo3-fluid="true">
+<!-- TYPO3 admin panel start -->
+<div class="typo3-adminPanel" style="display: block;">
+	<div class="typo3-adminPanel-reset">
+		<div class="typo3-adminPanel-module hide-button">
+			<!-- @todo toggle state -->
+			<core:icon identifier="actions-edit-unhide" alternativeMarkupIdentifier="inline"/>
+		</div>
+		<form id="typo3-adminPanel-form">
+			<f:render section="module"/>
+			<f:render section="settings"/>
+		</form>
+	</div>
+</div>
+<!-- TYPO3 admin panel end -->

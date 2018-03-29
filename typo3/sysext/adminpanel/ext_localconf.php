@@ -22,3 +22,7 @@ $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] = [
         'after' => ['tsdebug'],
     ],
 ];
+
+$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['adminPanel_save'] = \TYPO3\CMS\Adminpanel\Controller\EidController::class .
+                                                                      '::saveDataAction';
+

@@ -24,20 +24,13 @@ namespace TYPO3\CMS\Adminpanel\Modules;
 interface AdminPanelModuleInterface
 {
     /**
-     * Additional JavaScript code for this module
-     * (you should only use vanilla JS here, as you cannot
-     * rely on the web site providing a specific framework)
-     *
-     * @return string
-     */
-    public function getAdditionalJavaScriptCode(): string;
-
-    /**
      * Module content as rendered HTML
      *
      * @return string
      */
     public function getContent(): string;
+
+
 
     /**
      * Identifier for this module,
@@ -53,6 +46,13 @@ interface AdminPanelModuleInterface
      * @return string
      */
     public function getLabel(): string;
+
+    public function getIconIdentifier(): string;
+
+    /**
+     * @return string
+     */
+    public function getSettings(): string;
 
     /**
      * Initialize the module - runs early in a TYPO3 request
@@ -71,24 +71,6 @@ interface AdminPanelModuleInterface
     public function isEnabled(): bool;
 
     /**
-     * Module is open
-     * -> module is enabled
-     * -> module panel is shown and open
-     *
-     * @return bool
-     */
-    public function isOpen(): bool;
-
-    /**
-     * Module is shown
-     * -> module is enabled
-     * -> module panel should be displayed
-     *
-     * @return bool
-     */
-    public function isShown(): bool;
-
-    /**
      * Executed on saving / submit of the configuration form
      * Can be used to react to changed settings
      * (for example: clearing a specific cache)
@@ -98,16 +80,16 @@ interface AdminPanelModuleInterface
     public function onSubmit(array $input): void;
 
     /**
-     * Does this module need a form submit?
-     *
-     * @return bool
-     */
-    public function showFormSubmitButton(): bool;
-
-    /**
      * Returns a string array with javascript files that will be rendered after the module
      *
      * @return array
      */
     public function getJavaScriptFiles(): array;
+
+    /**
+     * Returns a string array with css files that will be rendered after the module
+     *
+     * @return array
+     */
+    public function getCssFiles(): array;
 }
