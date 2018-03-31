@@ -134,7 +134,7 @@ class PreviewModule extends AbstractModule
      * Initialize frontend preview functionality incl.
      * simulation of users or time
      */
-    protected function initializeFrontendPreview()
+    protected function initializeFrontendPreview(): void
     {
         $tsfe = $this->getTypoScriptFrontendController();
         $tsfe->clear_preview();
@@ -142,7 +142,17 @@ class PreviewModule extends AbstractModule
         $tsfe->showHiddenPage = (bool)$this->getConfigurationOption('showHiddenPages');
         $tsfe->showHiddenRecords = (bool)$this->getConfigurationOption('showHiddenRecords');
         // Simulate date
-        $simTime = $this->getConfigurationOption('simulateDate');
+        $simulateDate = $this->getConfigurationOption('simulateDate');
+        $simTime = null;
+        if ($simulateDate) {
+            $date = new \DateTime($simulateDate);
+            if ($date === false && is_numeric($simulateDate)) {
+                $date = new \DateTime('@' . $simulateDate);
+            }
+            if ($date !== false) {
+                $simTime = $date->getTimestamp();
+            }
+        }
         if ($simTime) {
             $GLOBALS['SIM_EXEC_TIME'] = $simTime;
             $GLOBALS['SIM_ACCESS_TIME'] = $simTime - $simTime % 60;
@@ -162,5 +172,13 @@ class PreviewModule extends AbstractModule
         if (!$tsfe->simUserGroup && !$simTime && !$tsfe->showHiddenPage && !$tsfe->showHiddenRecords) {
             $tsfe->fePreview = 0;
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getJavaScriptFiles(): array
+    {
+        return ['EXT:adminpanel/Resources/Public/JavaScript/Modules/Preview.js'];
     }
 }
