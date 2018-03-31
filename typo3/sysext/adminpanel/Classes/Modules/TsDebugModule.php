@@ -51,11 +51,16 @@ class TsDebugModule extends AbstractModule
                 ],
                 'trackContentRendering' => (int)$tsfeAdminConfig['tsdebug_LR'],
                 'forceTemplateParsing' => (int)$tsfeAdminConfig['tsdebug_forceTemplateParsing'],
-                'typoScriptLog' => $this->renderTypoScriptLog()
+                'typoScriptLog' => $this->renderTypoScriptLog(),
             ]
         );
 
         return $view->render();
+    }
+
+    public function getIconIdentifier(): string
+    {
+        return 'mimetypes-x-content-template-static';
     }
 
     /**
@@ -73,6 +78,16 @@ class TsDebugModule extends AbstractModule
     {
         $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_tsdebug.xlf:module.label';
         return $this->getLanguageService()->sL($locallangFileAndPath);
+    }
+
+    public function getShortInfo(): string
+    {
+        $messageCount = 0;
+        foreach ($this->getTimeTracker()->tsStackLog as $log) {
+            $messageCount += count($log['message'] ?? []);
+        }
+        $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_tsdebug.xlf:module.shortinfo';
+        return sprintf($this->getLanguageService()->sL($locallangFileAndPath), $messageCount);
     }
 
     /**
@@ -115,31 +130,6 @@ class TsDebugModule extends AbstractModule
     /**
      * Renders the TypoScript log as string
      *
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
-        $view->assignMultiple(
-            [
-                'isEnabled' => (int)$tsfeAdminConfig['display_tsdebug'],
-                'tree' => (int)$tsfeAdminConfig['tsdebug_tree'],
-                'display' => [
-                    'times' => (int)$tsfeAdminConfig['tsdebug_displayTimes'],
-                    'messages' => (int)$tsfeAdminConfig['tsdebug_displayMessages'],
-                    'content' => (int)$tsfeAdminConfig['tsdebug_displayContent'],
-                ],
-                'trackContentRendering' => (int)$tsfeAdminConfig['tsdebug_LR'],
-                'forceTemplateParsing' => (int)$tsfeAdminConfig['tsdebug_forceTemplateParsing'],
-                'typoScriptLog' => $this->renderTypoScriptLog(),
-            ]
-        );
-    public function getIconIdentifier(): string
-    {
-        return 'mimetypes-x-content-template-static';
-    }
-
-        $messageCount = 0;
-        foreach ($this->getTimeTracker()->tsStackLog as $log) {
-            $messageCount += count($log['message'] ?? []);
-        }
-        return $this->getLanguageService()->sL($locallangFileAndPath) . ' (' . $messageCount . ' Messages)';
      * @return string
      */
     private function renderTypoScriptLog(): string

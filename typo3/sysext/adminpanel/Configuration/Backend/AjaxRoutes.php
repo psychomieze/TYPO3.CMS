@@ -5,8 +5,8 @@
  * Contains all AJAX-based routes for entry points
  */
 return [
-    'adminpanel_saveForm' => [
+    'adminPanel_saveForm' => [
         'path' => '/adminpanel/form/save',
-        'target' => \TYPO3\CMS\Adminpanel\Controller\EidController::class . '::saveDataAction'
+        'target' => \TYPO3\CMS\Adminpanel\Controller\AjaxController::class . '::saveDataAction'
     ],
 ];

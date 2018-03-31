@@ -116,7 +116,8 @@ class EditModule extends AbstractModule
      */
     public function getLabel(): string
     {
-        return $this->extGetLL('edit');
+        $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_edit.xlf:module.label';
+        return $this->getLanguageService()->sL($locallangFileAndPath);
     }
 
     /**

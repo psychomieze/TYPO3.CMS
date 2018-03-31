@@ -185,4 +185,9 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     {
         return [];
     }
+
+    public function getShortInfo(): string
+    {
+        return '';
+    }
 }

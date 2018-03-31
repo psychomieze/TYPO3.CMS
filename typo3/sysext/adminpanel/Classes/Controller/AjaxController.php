@@ -10,14 +10,17 @@ use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-class EidController
+class AjaxController
 {
 
-    public function saveDataAction(RequestInterface $request)
+    public function saveDataAction(RequestInterface $request): JsonResponse
     {
         $moduleLoader = GeneralUtility::makeInstance(ModuleLoader::class);
 
         $modules = $moduleLoader->getModulesFromConfiguration();
+        /**
+         * @todo GP bah
+         */
         $input = GeneralUtility::_GP('TSFE_ADMIN_PANEL');
         $beUser = $this->getBackendUser();
         if (is_array($input)) {
