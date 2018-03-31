@@ -23,6 +23,6 @@ $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] = [
     ],
 ];
 
-$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['adminPanel_save'] = \TYPO3\CMS\Adminpanel\Controller\EidController::class .
+$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['adminPanel_save'] = \TYPO3\CMS\Adminpanel\Controller\AjaxController::class .
                                                                       '::saveDataAction';
 

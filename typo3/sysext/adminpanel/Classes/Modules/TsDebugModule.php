@@ -76,12 +76,18 @@ class TsDebugModule extends AbstractModule
      */
     public function getLabel(): string
     {
+        $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_tsdebug.xlf:module.label';
+        return $this->getLanguageService()->sL($locallangFileAndPath);
+    }
+
+    public function getShortInfo(): string
+    {
         $messageCount = 0;
         foreach ($this->getTimeTracker()->tsStackLog as $log) {
             $messageCount += count($log['message'] ?? []);
         }
-        $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_tsdebug.xlf:module.label';
-        return $this->getLanguageService()->sL($locallangFileAndPath) . ' (' . $messageCount . ' Messages)';
+        $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_tsdebug.xlf:module.shortinfo';
+        return sprintf($this->getLanguageService()->sL($locallangFileAndPath), $messageCount);
     }
 
     /**

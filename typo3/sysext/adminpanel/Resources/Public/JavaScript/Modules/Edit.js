@@ -1,6 +1,6 @@
 function editModuleOnClickHandler(event) {
   event.preventDefault();
-  const element = event.target;
+  var element = event.target;
   if (parent.opener && parent.opener.top) {
     parent.opener.top.fsMod.recentIds['web'] = element.getAttribute('data-pageUid');
     if (parent.opener.top && parent.opener.top.nav_frame && parent.opener.top.nav_frame.refresh_nav) {
@@ -16,7 +16,7 @@ function editModuleOnClickHandler(event) {
 }
 
 function initializeEditModule() {
-  const editModuleBtnOpenBackend = document.querySelector('.typo3-adminPanel-btn-openBackend');
+  var editModuleBtnOpenBackend = document.querySelector('.typo3-adminPanel-btn-openBackend');
   if (editModuleBtnOpenBackend.addEventListener) {
     editModuleBtnOpenBackend.addEventListener('click', editModuleOnClickHandler);
   } else if (editModuleBtnOpenBackend.attachEvent) {

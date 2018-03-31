@@ -79,7 +79,14 @@ class InfoModule extends AbstractModule
     public function getLabel(): string
     {
         $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_info.xlf:module.label';
-        return $this->getLanguageService()->sL($locallangFileAndPath) . ' (Load Time: ' . ($this->getTimeTracker()->getParseTime()) . ' ms)';
+        return $this->getLanguageService()->sL($locallangFileAndPath);
+    }
+
+    public function getShortInfo(): string
+    {
+        $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_info.xlf:module.shortinfo';
+        $parseTime = $this->getTimeTracker()->getParseTime();
+        return sprintf($this->getLanguageService()->sL($locallangFileAndPath), $parseTime);
     }
 
     /**

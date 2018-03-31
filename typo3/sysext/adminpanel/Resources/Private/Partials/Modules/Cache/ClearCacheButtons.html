@@ -1,0 +1,16 @@
+<div class="typo3-adminPanel-form-group">
+    <f:form.button class="typo3-adminPanel-btn typo3-adminPanel-btn-default"
+                   data="{'typo3-adminpanel-cache-ajax-url': clearCurrentPageCacheUrl}"
+                   type="button">
+        {f:translate(key:'LLL:EXT:adminpanel/Resources/Private/Language/locallang_cache.xlf:cache.clear_current')}
+    </f:form.button>
+</div>
+<div class="typo3-adminPanel-form-group">
+    <f:if condition="{clearPageCacheUrl}">
+        <f:form.button class="typo3-adminPanel-btn typo3-adminPanel-btn-default"
+                       data="{'typo3-adminpanel-cache-ajax-url': clearPageCacheUrl}"
+                       type="button">
+            {f:translate(key:'LLL:EXT:adminpanel/Resources/Private/Language/locallang_cache.xlf:cache.clear_pages')}
+        </f:form.button>
+    </f:if>
+</div>

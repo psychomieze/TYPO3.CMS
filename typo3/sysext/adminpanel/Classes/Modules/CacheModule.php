@@ -16,7 +16,7 @@ namespace TYPO3\CMS\Adminpanel\Modules;
  * The TYPO3 project - inspiring people to share!
  */
 
-use TYPO3\CMS\Core\Type\Bitmask\Permission;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
@@ -24,7 +24,7 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 class CacheModule extends AbstractModule
 {
 
-    public function getIconIdentifier():string
+    public function getIconIdentifier(): string
     {
         return 'apps-toolbar-menu-cache';
     }
@@ -36,12 +36,21 @@ class CacheModule extends AbstractModule
         $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
         $view->setPartialRootPaths([$this->extResources . '/Partials']);
 
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        $feCacheClear = $this->getBackendUser()->isAdmin() || $this->getBackendUser()->getTSConfigVal('options.clearCache.pages');
+
         $view->assignMultiple(
             [
                 'isEnabled' => $this->getBackendUser()->uc['TSFE_adminConfig']['display_cache'],
                 'noCache' => $this->getBackendUser()->uc['TSFE_adminConfig']['cache_noCache'],
-                'cacheLevels' => $this->getBackendUser()->uc['TSFE_adminConfig']['cache_clearCacheLevels'],
                 'currentId' => $this->getTypoScriptFrontendController()->id,
+                'clearPageCacheUrl' => $feCacheClear ? (string)$uriBuilder->buildUriFromRoute('tce_db', ['cacheCmd' => 'pages']) : '',
+                'clearCurrentPageCacheUrl' => (string)$uriBuilder->buildUriFromRoute(
+                    'tce_db',
+                    [
+                        'cacheCmd' => $this->getTypoScriptFrontendController()->id,
+                    ]
+                ),
             ]
         );
 
@@ -87,31 +96,18 @@ class CacheModule extends AbstractModule
     }
 
     /**
-     * Clear cache on saving if requested
-     *
-     * @param array $input
-     */
-    public function onSubmit(array $input): void
-    {
-        if (($input['action']['clearCache'] ?? false) || isset($input['preview_showFluidDebug'])) {
-            $theStartId = (int)$input['cache_clearCacheId'];
-            $this->getTypoScriptFrontendController()
-                ->clearPageCacheContent_pidList(
-                    $this->getBackendUser()->extGetTreeList(
-                        $theStartId,
-                        (int)$this->getConfigurationOption('clearCacheLevels'),
-                        0,
-                        $this->getBackendUser()->getPagePermsClause(Permission::PAGE_SHOW)
-                    ) . $theStartId
-                );
-        }
-    }
-
-    /**
      * @return TypoScriptFrontendController
      */
     protected function getTypoScriptFrontendController(): TypoScriptFrontendController
     {
         return $GLOBALS['TSFE'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getJavaScriptFiles(): array
+    {
+        return ['EXT:adminpanel/Resources/Public/JavaScript/Modules/Cache.js'];
     }
 }

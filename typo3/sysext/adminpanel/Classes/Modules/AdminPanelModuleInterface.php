@@ -47,7 +47,19 @@ interface AdminPanelModuleInterface
      */
     public function getLabel(): string;
 
+    /**
+     * Module Icon identifier - needs to be registered in iconRegistry
+     *
+     * @return string
+     */
     public function getIconIdentifier(): string;
+
+    /**
+     * Displayed directly in the bar if module has content
+     *
+     * @return string
+     */
+    public function getShortInfo(): string;
 
     /**
      * @return string
