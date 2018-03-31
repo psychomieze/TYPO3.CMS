@@ -1,7 +1,7 @@
 function initializeCacheModule() {
 	var buttons = Array.from(document.querySelectorAll('[data-typo3-adminpanel-cache-ajax-url]'));
 
-	buttons.forEach(function(elem) {
+	buttons.forEach(function (elem) {
 		if (elem.addEventListener) {
 			elem.addEventListener('click', clearCache);
 		} else if (elem.attachEvent) {
@@ -20,8 +20,4 @@ function clearCache() {
 	};
 }
 
-if (window.addEventListener) {
-	window.addEventListener('load', initializeCacheModule, false);
-} else if (window.attachEvent) {
-	window.attachEvent('onload', initializeCacheModule);
-}
+window.addEventListener('load', initializeCacheModule, false);
