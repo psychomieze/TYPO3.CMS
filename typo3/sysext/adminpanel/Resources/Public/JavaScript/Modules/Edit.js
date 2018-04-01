@@ -9,7 +9,7 @@ function editModuleOnClickHandler(event) {
 		parent.opener.top.goToModule(element.getAttribute('data-pageModule'));
 		parent.opener.top.focus();
 	} else {
-		const vHWin = window.open(element.getAttribute('data-backendScript'), element.getAttribute('data-t3BeSitenameMd5'));
+		var vHWin = window.open(element.getAttribute('data-backendScript'), element.getAttribute('data-t3BeSitenameMd5'));
 		vHWin.focus();
 	}
 	return false;

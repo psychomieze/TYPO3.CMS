@@ -190,32 +190,6 @@ class AdminPanelView
         return implode('', $output);
     }
 
-    /**
-     * Fetches recursively all GET parameters as hidden fields.
-     * Called from display()
-     *
-     * @param string $key Current key
-     * @param array $val Current value
-     * @return string Hidden fields HTML-code
-     * @see display()
-     */
-    protected function getHiddenFields($key, array $val)
-    {
-        $out = '';
-        foreach ($val as $k => $v) {
-            if (is_array($v)) {
-                $out .= $this->getHiddenFields($key . '[' . $k . ']', $v);
-            } else {
-                $out .= '<input type="hidden" name="' .
-                        htmlspecialchars($key, ENT_QUOTES | ENT_HTML5) . '[' .
-                        htmlspecialchars($k, ENT_QUOTES | ENT_HTML5) . ']" value="' .
-                        htmlspecialchars($v, ENT_QUOTES | ENT_HTML5) . '">' . LF;
-            }
-        }
-        return $out;
-    }
-
-
     /*****************************************************
      * Admin Panel Layout Helper functions
      ****************************************************/
@@ -272,6 +246,7 @@ class AdminPanelView
      *
      * @param string $key Key for a label in the $LOCAL_LANG array of "sysext/lang/Resources/Private/Language/locallang_tsfe.xlf
      * @param bool $convertWithHtmlspecialchars If TRUE the language-label will be sent through htmlspecialchars
+     * @deprecated Since TYPO3 v9 - only used in deprecated methods
      * @return string The value for the $key
      */
     protected function extGetLL($key, $convertWithHtmlspecialchars = true)
