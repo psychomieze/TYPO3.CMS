@@ -74,14 +74,16 @@ class AdminPanelView
     /**
      * Initializes settings for the admin panel.
      */
-    public function initialize()
+    public function initialize(): void
     {
-        $moduleLoader = GeneralUtility::makeInstance(ModuleLoader::class);
-        $this->modules = $moduleLoader->getModulesFromConfiguration();
+        if ($this->isAdminPanelActivated()) {
+            $moduleLoader = GeneralUtility::makeInstance(ModuleLoader::class);
+            $this->modules = $moduleLoader->getModulesFromConfiguration();
 
-        foreach ($this->modules as $module) {
-            if ($module->isEnabled()) {
-                $module->initializeModule();
+            foreach ($this->modules as $module) {
+                if ($module->isEnabled()) {
+                    $module->initializeModule();
+                }
             }
         }
     }
@@ -107,7 +109,6 @@ class AdminPanelView
     {
         $hookObjectContent = $this->callDeprecatedHookObject();
         $resources = $this->getResources();
-        $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
 
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Main.html';
@@ -115,20 +116,31 @@ class AdminPanelView
         $view->setPartialRootPaths(['EXT:adminpanel/Resources/Private/Partials']);
         $view->setLayoutRootPaths(['EXT:adminpanel/Resources/Private/Layouts']);
 
-        $view->assignMultiple(
-            [
-                'modules' => $this->modules,
-                'hookObjectContent' => $hookObjectContent,
-            ]
-        );
+        $view->assignMultiple([
+            'toggleActiveUrl' => $this->generateBackendUrl('ajax_adminPanel_toggle'),
+            'resources' => $resources,
+            'adminPanelActive' => $this->isAdminPanelActivated()
+        ]);
 
-        return $moduleResources['css'] . $resources . $moduleResources['js'] . $view->render();
+        if ($this->isAdminPanelActivated()) {
+            $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
+            $view->assignMultiple(
+                [
+                    'modules' => $this->modules,
+                    'hookObjectContent' => $hookObjectContent,
+                    'saveUrl' => $this->generateBackendUrl('ajax_adminPanel_saveForm'),
+                    'moduleResources' => $moduleResources
+                ]
+            );
+        }
+
+        return $view->render();
     }
 
-    protected function generateSaveUrl(): string
+    protected function generateBackendUrl(string $route): string
     {
         $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-        return (string)$uriBuilder->buildUriFromRoute('ajax_adminPanel_saveForm');
+        return (string)$uriBuilder->buildUriFromRoute($route);
     }
 
     /**
@@ -162,11 +174,7 @@ class AdminPanelView
         $js = $this->getJsTag($jsFileLocation);
         $cssFileLocation = 'EXT:adminpanel/Resources/Public/Css/panel-new.css';
         $css = $this->getCssTag($cssFileLocation);
-
-        $inlineJs = '<script type="text/javascript">/*<![CDATA[*/' . GeneralUtility::minifyJavaScript(
-                'var typo3AdminPanelSaveUrl = "' . $this->generateSaveUrl() . '";'
-            ) . '/*]]>*/</script>';
-        return $css . $this->getAdminPanelStylesheet() . $inlineJs . $js;
+        return $css . $this->getAdminPanelStylesheet() . $js;
     }
 
     protected function getAdditionalResourcesForModules(array $modules): array

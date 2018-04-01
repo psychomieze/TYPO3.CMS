@@ -1,4 +1,5 @@
 <html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+      xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
       data-namespace-typo3-fluid="true">
 <f:layout name="Default"/>
 
@@ -9,25 +10,23 @@
                 <div class="typo3-adminPanel-module-icon">
                     <core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
                     <span class="typo3-adminPanel-module-label">
-					<f:if condition="{module.shortInfo}">
-						<f:then>
-						    {module.shortInfo}
-						</f:then>
-						<f:else>
-							{module.label}
-						</f:else>
-					</f:if>
-				</span>
+                    <f:if condition="{module.shortInfo}">
+                        <f:then>
+                            {module.shortInfo}
+                        </f:then>
+                        <f:else>
+                            {module.label}
+                        </f:else>
+                    </f:if>
+                </span>
                 </div>
-                <div class="typo3-adminPanel-module-content">
+                <div class="typo3-adminPanel-module-content" data-typo3-role="typo3-adminPanel-module-content">
                     <div class="typo3-adminPanel-module-content-inner">
                         <h3>
                             <core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
                             {module.label}
                         </h3>
-                        <f:format.raw>
-                            {module.content}
-                        </f:format.raw>
+                        <f:format.raw>{module.content}</f:format.raw>
                     </div>
                 </div>
             </div>
@@ -38,14 +37,13 @@
             <div class="typo3-adminPanel-module-icon">
                 <core:icon identifier="actions-window-open" alternativeMarkupIdentifier="inline"/>
                 <span class="typo3-adminPanel-module-label">
-					<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:deprecatedModuleLabel" />
-				</span>
+                    <f:translate
+                            key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:deprecatedModuleLabel"/>
+                </span>
             </div>
-            <div class="typo3-adminPanel-module-content">
+            <div class="typo3-adminPanel-module-content" data-typo3-role="typo3-adminPanel-module-content">
                 <div class="typo3-adminPanel-module-content-inner">
-                    <f:format.raw>
-                        {hookObjectModuleContent}
-                    </f:format.raw>
+                    <f:format.raw>{hookObjectModuleContent}</f:format.raw>
                 </div>
             </div>
         </div>
@@ -58,8 +56,8 @@
         <div class="typo3-adminPanel-module-icon">
             <core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
             <span class="typo3-adminPanel-module-label">
-					<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.label" />
-				</span>
+                <f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.label"/>
+            </span>
         </div>
         <div class="typo3-adminPanel-module-content">
             <f:for each="{modules}" as="module">
@@ -74,8 +72,9 @@
                 </f:if>
             </f:for>
             <div class="typo3-adminPanel-module-settings-update">
-                <button id="typo3-adminPanel-save-form" class="typo3-adminPanel-btn typo3-adminPanel-btn-dark">
-                    <f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.updateButtonLabel"/>
+                <button data-typo3-role="typo3-adminPanel-saveButton" class="typo3-adminPanel-btn typo3-adminPanel-btn-dark">
+                    <f:translate
+                     key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.updateButtonLabel"/>
                 </button>
             </div>
         </div>
