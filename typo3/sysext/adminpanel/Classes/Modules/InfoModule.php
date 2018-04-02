@@ -46,6 +46,10 @@ class InfoModule extends AbstractModule
         $tsfe = $this->getTypoScriptFrontendController();
 
         $view->assignMultiple([
+            'post' => $_POST,
+            'get' => $_GET,
+            'cookie' => $_COOKIE,
+            'server' => $_SERVER,
             'info' => [
                 'pageUid' => $tsfe->id,
                 'pageType' => $tsfe->type,
