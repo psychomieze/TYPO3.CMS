@@ -6,7 +6,7 @@
 <f:section name="module">
     <f:for each="{modules}" as="module">
         <f:if condition="{module.content}">
-            <div class="typo3-adminPanel-module">
+            <div class="typo3-adminPanel-module" data-typo3-role="typo3-adminPanel-module-trigger">
                 <div class="typo3-adminPanel-module-icon">
                     <core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
                     <span class="typo3-adminPanel-module-label">
