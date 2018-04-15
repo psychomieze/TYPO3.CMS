@@ -52,9 +52,11 @@ class MainController implements SingletonInterface
         $this->validateSortAndInitializeModules();
         $this->saveConfiguration();
 
-        foreach ($this->modules as $module) {
-            if ($module->isEnabled()) {
-                $module->initializeModule($request);
+        if ($this->isAdminPanelActivated()) {
+            foreach ($this->modules as $module) {
+                if ($module->isEnabled()) {
+                    $module->initializeModule($request);
+                }
             }
         }
     }
@@ -87,6 +89,18 @@ class MainController implements SingletonInterface
             $cacheManager->getCache('fluid_template')->flush();
         }
     }
+
+    /**
+     * Returns true if admin panel was activated
+     * (switched "on" via GUI)
+     *
+     * @return bool
+     */
+    protected function isAdminPanelActivated(): bool
+    {
+        return $this->getBackendUser()->uc['TSFE_adminConfig']['display_top'] ?? false;
+    }
+
 
     /**
      * Validates, sorts and initiates the registered modules
@@ -189,7 +203,6 @@ class MainController implements SingletonInterface
         $adminPanelView = GeneralUtility::makeInstance(AdminPanelView::class);
         $hookObjectContent = $adminPanelView->callDeprecatedHookObject();
         $resources = $this->getResources();
-        $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
 
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Main.html';
@@ -199,18 +212,30 @@ class MainController implements SingletonInterface
 
         $view->assignMultiple(
             [
-                'modules' => $this->modules,
-                'hookObjectContent' => $hookObjectContent,
+                'toggleActiveUrl' => $this->generateBackendUrl('ajax_adminPanel_toggle'),
+                'resources' => $resources,
+                'adminPanelActive' => $this->isAdminPanelActivated()
             ]
         );
+        if ($this->isAdminPanelActivated()) {
+            $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
+            $view->assignMultiple(
+                [
+                    'modules' => $this->modules,
+                    'hookObjectContent' => $hookObjectContent,
+                    'saveUrl' => $this->generateBackendUrl('ajax_adminPanel_saveForm'),
+                    'moduleResources' => $moduleResources
+                ]
+            );
+        }
 
-        return $moduleResources['css'] . $resources . $moduleResources['js'] . $view->render();
+        return  $view->render();
     }
 
-    protected function generateSaveUrl(): string
+    protected function generateBackendUrl(string $route): string
     {
         $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-        return (string)$uriBuilder->buildUriFromRoute('ajax_adminPanel_saveForm');
+        return (string)$uriBuilder->buildUriFromRoute($route);
     }
 
     /**
@@ -251,10 +276,7 @@ class MainController implements SingletonInterface
         $cssFileLocation = 'EXT:adminpanel/Resources/Public/Css/panel-new.css';
         $css = $this->getCssTag($cssFileLocation);
 
-        $inlineJs = '<script type="text/javascript">/*<![CDATA[*/' . GeneralUtility::minifyJavaScript(
-                'var typo3AdminPanelSaveUrl = "' . $this->generateSaveUrl() . '";'
-            ) . '/*]]>*/</script>';
-        return $css . $this->getAdminPanelStylesheet() . $inlineJs . $js;
+        return $css . $this->getAdminPanelStylesheet() . $js;
     }
 
     protected function getAdditionalResourcesForModules(array $modules): array

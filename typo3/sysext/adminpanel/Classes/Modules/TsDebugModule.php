@@ -42,7 +42,6 @@ class TsDebugModule extends AbstractModule
         $tsfeAdminConfig = $this->getBackendUser()->uc['TSFE_adminConfig'];
         $view->assignMultiple(
             [
-                'isEnabled' => (int)$tsfeAdminConfig['display_tsdebug'],
                 'tree' => (int)$tsfeAdminConfig['tsdebug_tree'],
                 'display' => [
                     'times' => (int)$tsfeAdminConfig['tsdebug_displayTimes'],

@@ -115,7 +115,7 @@ class InfoModule extends AbstractModule
      *
      * @return array
      */
-    private function collectImagesOnPage(): array
+    protected function collectImagesOnPage(): array
     {
         $imagesOnPage = [
             'files' => [],
@@ -151,7 +151,7 @@ class InfoModule extends AbstractModule
      * Gets the document size from the current page in a human readable format
      * @return string
      */
-    private function collectDocumentSize(): string
+    protected function collectDocumentSize(): string
     {
         $documentSize = 0;
         if ($this->isNoCacheEnabled() === true) {
@@ -164,7 +164,7 @@ class InfoModule extends AbstractModule
     /**
      * @return bool
      */
-    private function isNoCacheEnabled(): bool
+    protected function isNoCacheEnabled(): bool
     {
         return (bool)$this->getTypoScriptFrontendController()->no_cache;
     }

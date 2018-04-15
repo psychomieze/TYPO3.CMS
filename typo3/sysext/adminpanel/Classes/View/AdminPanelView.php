@@ -462,12 +462,11 @@ class AdminPanelView
      *
      * @param string $sectionSuffix The code for the display_ label/key
      * @param string $sectionTitle Title (HTML-escaped)
-     * @param string $className The classname for the <a> tag
      * @return string $className Linked input string
      * @see extGetHead()
      * @deprecated  since TYPO3 v9 - use new AdminPanel API instead
      */
-    public function linkSectionHeader($sectionSuffix, $sectionTitle, $className = '')
+    public function linkSectionHeader($sectionSuffix, $sectionTitle)
     {
         trigger_error('since TYPO3 v9 - use new AdminPanel API instead', E_USER_DEPRECATED);
         $onclick = 'document.TSFE_ADMIN_PANEL_FORM[' .

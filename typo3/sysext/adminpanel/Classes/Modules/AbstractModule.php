@@ -43,25 +43,20 @@ abstract class AbstractModule implements AdminPanelModuleInterface
         $this->mainConfiguration = $this->getBackendUser()->getTSConfigProp('admPanel');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function initializeModule(): void
-    {
-    }
-
     public function getSettings(): string
     {
         return '';
     }
 
-    public function getIconIdentifier(): string
+    public function getIconIdentifier(): string {
+        return '';
+    }
+
     /**
      * @inheritdoc
      */
     public function initializeModule(ServerRequest $request): void
     {
-        return '';
     }
 
     public function getContent(): string

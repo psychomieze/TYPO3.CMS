@@ -41,36 +41,20 @@ class EditModule extends AbstractModule
      */
     public function getSettings(): string
     {
+        $editToolbarService = GeneralUtility::makeInstance(EditToolbarService::class);
+        $toolbar = $editToolbarService->createToolbar();
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $templateNameAndPath = $this->extResources . '/Templates/Modules/Edit.html';
         $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
         $view->setPartialRootPaths([$this->extResources . '/Partials']);
-
-        $editToolbarService = GeneralUtility::makeInstance(EditToolbarService::class);
-        $view->assignMultiple([
-            'feEdit' => ExtensionManagementUtility::isLoaded('feedit'),
-            'display' => [
-                'edit' => $this->getBackendUser()->uc['TSFE_adminConfig']['display_edit'],
-                'fieldIcons' => $this->getConfigurationOption('displayFieldIcons'),
-                'displayIcons' => $this->getConfigurationOption('displayIcons'),
-            ],
-            'toolbar' => $editToolbarService->createToolbar(),
-            'script' => [
-                'pageUid' => (int)$this->getTypoScriptFrontendController()->page['uid'],
-                'pageModule' => $this->getPageModule(),
-                'backendScript' => BackendUtility::getBackendScript(),
-                't3BeSitenameMd5' => \md5('Typo3Backend-' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']),
-            ],
-        ]);
         $view->assignMultiple(
             [
                 'feEdit' => ExtensionManagementUtility::isLoaded('feedit'),
                 'display' => [
-                    'edit' => $this->getBackendUser()->uc['TSFE_adminConfig']['display_edit'],
                     'fieldIcons' => $this->getConfigurationOption('displayFieldIcons'),
                     'displayIcons' => $this->getConfigurationOption('displayIcons'),
                 ],
-                'toolbar' => $this->getBackendUser()->adminPanel->ext_makeToolBar(),
+                'toolbar' => $toolbar,
                 'script' => [
                     'pageUid' => (int)$this->getTypoScriptFrontendController()->page['uid'],
                     'pageModule' => $this->getPageModule(),
@@ -79,7 +63,6 @@ class EditModule extends AbstractModule
                 ],
             ]
         );
-
         return $view->render();
     }
 
