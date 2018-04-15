@@ -212,7 +212,9 @@ class AdminPanelView
 
         $output = [];
         $output[] = '<span class="typo3-adminPanel-section-title-identifier"></span>';
-        $output[] = '<a href="javascript:void(0)" onclick="' . htmlspecialchars($onclick, ENT_QUOTES | ENT_HTML5) . '">';
+        $output[] = '<a href="javascript:void(0)" onclick="' .
+                    htmlspecialchars($onclick, ENT_QUOTES | ENT_HTML5) .
+                    '">';
         $output[] = '  ' . htmlspecialchars($module->getLabel(), ENT_QUOTES | ENT_HTML5);
         $output[] = '</a>';
         $output[] = '<input type="hidden" name="TSFE_ADMIN_PANEL[display_' .
@@ -431,7 +433,10 @@ class AdminPanelView
     {
         trigger_error('since TYPO3 v9 - use new AdminPanel API instead', E_USER_DEPRECATED);
         $title = $title ? '<label for="' .
-                          htmlspecialchars($title, ENT_QUOTES | ENT_HTML5) . '">' . $this->extGetLL($title) . '</label>' : '';
+                          htmlspecialchars($title, ENT_QUOTES | ENT_HTML5) .
+                          '">' .
+                          $this->extGetLL($title) .
+                          '</label>' : '';
         $out = '';
         $out .= (string)$outerDivClass ? '<div class="' .
                                          htmlspecialchars($outerDivClass, ENT_QUOTES | ENT_HTML5) . '">' : '<div>';
@@ -477,7 +482,9 @@ class AdminPanelView
 
         $output = [];
         $output[] = '<span class="typo3-adminPanel-section-title-identifier"></span>';
-        $output[] = '<a href="javascript:void(0)" onclick="' . htmlspecialchars($onclick, ENT_QUOTES | ENT_HTML5) . '">';
+        $output[] = '<a href="javascript:void(0)" onclick="' .
+                    htmlspecialchars($onclick, ENT_QUOTES | ENT_HTML5) .
+                    '">';
         $output[] = '  ' . $sectionTitle;
         $output[] = '</a>';
         $output[] = '<input type="hidden" name="TSFE_ADMIN_PANEL[display_' .

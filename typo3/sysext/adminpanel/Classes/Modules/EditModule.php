@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TYPO3\CMS\Adminpanel\Modules;
 
@@ -29,11 +29,6 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  */
 class EditModule extends AbstractModule
 {
-
-    public function getIconIdentifier(): string
-    {
-        return 'actions-open';
-    }
     /**
      * Creates the content for the "edit" section ("module") of the Admin Panel
      *
@@ -92,6 +87,14 @@ class EditModule extends AbstractModule
     public function getIdentifier(): string
     {
         return 'edit';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIconIdentifier(): string
+    {
+        return 'actions-open';
     }
 
     /**

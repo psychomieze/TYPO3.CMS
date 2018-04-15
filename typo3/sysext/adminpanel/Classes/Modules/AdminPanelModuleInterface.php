@@ -25,7 +25,6 @@ use TYPO3\CMS\Core\Http\ServerRequest;
  */
 interface AdminPanelModuleInterface
 {
-
     /**
      * Module content as rendered HTML
      *

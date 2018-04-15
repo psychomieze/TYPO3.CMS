@@ -57,17 +57,20 @@ class TsDebugModule extends AbstractModule
         return $view->render();
     }
 
-    public function getIconIdentifier(): string
-    {
-        return 'mimetypes-x-content-template-static';
-    }
-
     /**
      * @inheritdoc
      */
     public function getIdentifier(): string
     {
         return 'tsdebug';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIconIdentifier(): string
+    {
+        return 'mimetypes-x-content-template-static';
     }
 
     /**
@@ -100,14 +103,6 @@ class TsDebugModule extends AbstractModule
             $typoScriptFrontend->set_no_cache('Admin Panel: Force template parsing', true);
         }
         $this->getTimeTracker()->LR = (bool)$this->getConfigurationOption('LR');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function showFormSubmitButton(): bool
-    {
-        return true;
     }
 
     /**
