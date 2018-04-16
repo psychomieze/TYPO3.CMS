@@ -61,17 +61,14 @@
 						</div>
 					</div>
 					<div class="typo3-adminPanel-module-content-inner">
-						<div class="container--tabs">
-							<section class="row">
-								<div class="tab-content">
-									<f:for each="{module.subModules}" as="sub" iteration="iterator">
-										<div class="tab-pane {f:if(condition:'{iterator.isFirst}',then:'active')}" data-typo3-role="typo3-adminPanel-tab"
-												 data-typo3-tab-id="{sub.identifier}">
-											<f:format.raw>{sub.content}</f:format.raw>
-										</div>
-									</f:for>
+						<div class="typo3-adminPanel-tab-content">
+							<f:for each="{module.subModules}" as="sub" iteration="iterator">
+								<div class="typo3-adminPanel-tab-pane {f:if(condition:'{iterator.isFirst}',then:'active')}"
+										 data-typo3-role="typo3-adminPanel-tab"
+										 data-typo3-tab-id="{sub.identifier}">
+									<f:format.raw>{sub.content}</f:format.raw>
 								</div>
-							</section>
+							</f:for>
 						</div>
 					</div>
 				</div>

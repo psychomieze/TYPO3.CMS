@@ -1,65 +1,60 @@
 <f:if condition="{get}">
 	<h3>$_GET</h3>
-	<div class="typo3-adminPanel-table-overflow">
-		<table class="typo3-adminPanel-table">
-			<f:for each="{get}" as="val" key="key">
-				<tr>
-					<td>{key}</td>
-					<td>{val}</td>
-				</tr>
-			</f:for>
-		</table>
-	</div>
+	<table class="typo3-adminPanel-table">
+		<f:render partial="TableKeyValueHeader" />
+		<f:for each="{get}" as="val" key="key">
+			<tr>
+				<th>{key}</th>
+				<td>{val}</td>
+			</tr>
+		</f:for>
+	</table>
 </f:if>
 <f:if condition="{post}">
 	<h3>$_POST</h3>
-	<div class="typo3-adminPanel-table-overflow">
-		<table class="typo3-adminPanel-table">
-			<f:for each="{post}" as="val" key="key">
-				<tr>
-					<td>{key}</td>
-					<td>{val}</td>
-				</tr>
-			</f:for>
-		</table>
-	</div>
+	<table class="typo3-adminPanel-table">
+		<f:render partial="TableKeyValueHeader" />
+		<f:for each="{post}" as="val" key="key">
+			<tr>
+				<th>{key}</th>
+				<td>{val}</td>
+			</tr>
+		</f:for>
+	</table>
 </f:if>
 <f:if condition="{cookie}">
 	<h3>$_COOKIE</h3>
-	<div class="typo3-adminPanel-table-overflow">
-		<table class="typo3-adminPanel-table">
-			<f:for each="{cookie}" as="val" key="key">
-				<tr>
-					<td>{key}</td>
-					<td>{val}</td>
-				</tr>
-			</f:for>
-		</table>
-	</div>
+	<table class="typo3-adminPanel-table">
+		<f:render partial="TableKeyValueHeader" />
+		<f:for each="{cookie}" as="val" key="key">
+			<tr>
+				<th>{key}</th>
+				<td>{val}</td>
+			</tr>
+		</f:for>
+	</table>
 </f:if>
 <f:if condition="{session}">
 	<h3>$_SESSION</h3>
-	<div class="typo3-adminPanel-table-overflow">
-		<table class="typo3-adminPanel-table">
-			<f:for each="{session}" as="val" key="key">
-				<tr>
-					<td>{key}</td>
-					<td>{val}</td>
-				</tr>
-			</f:for>
-		</table>
-	</div>
+	<table class="typo3-adminPanel-table">
+		<f:render partial="TableKeyValueHeader" />
+		<f:for each="{session}" as="val" key="key">
+			<tr>
+				<th>{key}</th>
+				<td>{val}</td>
+			</tr>
+		</f:for>
+	</table>
 </f:if>
 <f:if condition="{server}">
 	<h3>$_SERVER</h3>
-	<div class="typo3-adminPanel-table-overflow">
-		<table class="typo3-adminPanel-table">
-			<f:for each="{server}" as="val" key="key">
-				<tr>
-					<td>{key}</td>
-					<td>{val}</td>
-				</tr>
-			</f:for>
-		</table>
-	</div>
+	<table class="typo3-adminPanel-table">
+		<f:render partial="TableKeyValueHeader" />
+		<f:for each="{server}" as="val" key="key">
+			<tr>
+				<th>{key}</th>
+				<td>{val}</td>
+			</tr>
+		</f:for>
+	</table>
 </f:if>

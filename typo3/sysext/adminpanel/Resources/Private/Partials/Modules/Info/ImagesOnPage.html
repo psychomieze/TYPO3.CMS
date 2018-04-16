@@ -1,24 +1,20 @@
 <f:if condition="{info.imagesOnPage.total} > 0">
-    <tr>
-        <td><strong>
-            <f:translate
-                    key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_info.xlf:imagesOnPage"/>
-        </strong></td>
-        <td>{info.imagesOnPage.total}</td>
-    </tr>
+	<dl class="typo3-adminPanel-dl">
+		<dt>
+			<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_info.xlf:imagesOnPage"/>
+		</dt>
+		<dd>
+			{info.imagesOnPage.total}
+		</dd>
 
-    <f:for each="{info.imagesOnPage.files}" as="file">
-        <tr>
-            <td>&nbsp; {file.name}</td>
-            <td>{file.sizeHuman}</td>
-        </tr>
-    </f:for>
+		<f:for each="{info.imagesOnPage.files}" as="file">
+			<dt>{file.name}</dt>
+			<dd>{file.sizeHuman}</dd>
+		</f:for>
 
-    <tr>
-        <td><strong>
-            <f:translate
-                    key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_info.xlf:imagesSize"/>
-        </strong></td>
-        <td>{info.imagesOnPage.totalSize}</td>
-    </tr>
+		<dt>
+			<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_info.xlf:imagesSize"/>
+		</dt>
+		<dd>{info.imagesOnPage.totalSize}</dd>
+	</dl>
 </f:if>
