@@ -43,13 +43,41 @@ function initializeAdminPanel() {
   });
 
   var allTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-trigger]'));
-
   allTriggers.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      var parent = this.closest('.typo3-adminPanel-module');
+      if (parent.classList.contains('active')) {
+        parent.classList.remove('active');
+      } else {
+        allTriggers.forEach(function (innerElm) {
+          innerElm.closest('.typo3-adminPanel-module').classList.remove('active');
+        });
+        parent.classList.add('active');
+      }
+    });
+  });
+
+  var tabTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-tabs-trigger]'));
+  tabTriggers.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      var targets = this.closest('.typo3-adminPanel-module-content-header').querySelectorAll('.typo3-adminPanel-module-content-nav');
+      targets.forEach(function (target) {
+        if (target.classList.contains('active')) {
+          target.classList.remove('active');
+        } else {
+          target.classList.add('active');
+        }
+      });
+    });
+  });
+
+  var popupTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-popup-trigger]'));
+  popupTriggers.forEach(function (elm) {
     elm.addEventListener('click', function () {
       if (this.classList.contains('active')) {
         this.classList.remove('active');
       } else {
-        allTriggers.forEach(function (innerElm) {
+        popupTriggers.forEach(function (innerElm) {
           innerElm.classList.remove('active');
         });
         this.classList.add('active');
@@ -60,7 +88,7 @@ function initializeAdminPanel() {
 
 function initTabs() {
 
-  var myTabs = document.querySelectorAll("[data-typo3-role=typo3-adminPanel-tabs] > li");
+  var myTabs = document.querySelectorAll("[data-typo3-role=typo3-adminPanel-tabs] > a");
 
   function myTabClicks(tabClickEvent) {
     tabClickEvent.preventDefault();
