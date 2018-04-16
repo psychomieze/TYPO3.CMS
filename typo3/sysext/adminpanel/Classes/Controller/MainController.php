@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TYPO3\CMS\Adminpanel\Controller;
 
@@ -17,6 +17,7 @@ namespace TYPO3\CMS\Adminpanel\Controller;
  */
 
 use TYPO3\CMS\Adminpanel\Modules\AdminPanelModuleInterface;
+use TYPO3\CMS\Adminpanel\Modules\AdminPanelSubModuleInterface;
 use TYPO3\CMS\Adminpanel\View\AdminPanelView;
 use TYPO3\CMS\Backend\FrontendBackendUserAuthentication;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
@@ -49,12 +50,21 @@ class MainController implements SingletonInterface
      */
     public function initialize(ServerRequest $request): void
     {
-        $this->validateSortAndInitializeModules();
+        $this->modules = $this->validateSortAndInitializeModules(
+            $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] ?? []
+        );
         $this->saveConfiguration();
 
         if ($this->isAdminPanelActivated()) {
             foreach ($this->modules as $module) {
                 if ($module->isEnabled()) {
+                    $subModules = $this->validateSortAndInitializeSubModules(
+                        $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'][$module->getIdentifier()]['submodules'] ?? []
+                    );
+                    foreach ($subModules as $subModule) {
+                        $subModule->initializeModule($request);
+                    }
+                    $module->setSubModules($subModules);
                     $module->initializeModule($request);
                 }
             }
@@ -62,118 +72,69 @@ class MainController implements SingletonInterface
     }
 
     /**
-     * Save admin panel configuration to backend user UC
-     */
-    protected function saveConfiguration(): void
-    {
-        $input = GeneralUtility::_GP('TSFE_ADMIN_PANEL');
-        $beUser = $this->getBackendUser();
-        if (is_array($input)) {
-            // Setting
-            $beUser->uc['TSFE_adminConfig'] = array_merge(
-                !is_array($beUser->uc['TSFE_adminConfig']) ? [] : $beUser->uc['TSFE_adminConfig'],
-                $input
-            );
-            unset($beUser->uc['TSFE_adminConfig']['action']);
-
-            foreach ($this->modules as $module) {
-                if ($module->isEnabled() && $module->isOpen()) {
-                    $module->onSubmit($input);
-                }
-            }
-            // Saving
-            $beUser->writeUC();
-            // Flush fluid template cache
-            $cacheManager = new CacheManager();
-            $cacheManager->setCacheConfigurations($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']);
-            $cacheManager->getCache('fluid_template')->flush();
-        }
-    }
-
-    /**
-     * Returns true if admin panel was activated
-     * (switched "on" via GUI)
+     * Renders the panel - Is currently called via RenderHook in postProcessOutput
      *
-     * @return bool
+     * @return string
      */
-    protected function isAdminPanelActivated(): bool
+    public function render(): string
     {
-        return $this->getBackendUser()->uc['TSFE_adminConfig']['display_top'] ?? false;
-    }
+        // legacy handling
+        $adminPanelView = GeneralUtility::makeInstance(AdminPanelView::class);
+        $hookObjectContent = $adminPanelView->callDeprecatedHookObject();
+        // end legacy handling
 
+        $resources = $this->getResources();
 
-    /**
-     * Validates, sorts and initiates the registered modules
-     *
-     * @throws \RuntimeException
-     */
-    protected function validateSortAndInitializeModules(): void
-    {
-        $modules = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] ?? [];
-        if (empty($modules)) {
-            return;
-        }
-        foreach ($modules as $identifier => $configuration) {
-            if (empty($configuration) || !is_array($configuration)) {
-                throw new \RuntimeException(
-                    'Missing configuration for module "' . $identifier . '".',
-                    1519490105
-                );
-            }
-            if (!is_string($configuration['module']) ||
-                empty($configuration['module']) ||
-                !class_exists($configuration['module']) ||
-                !is_subclass_of(
-                    $configuration['module'],
-                    AdminPanelModuleInterface::class
-                )
-            ) {
-                throw new \RuntimeException(
-                    'The module "' .
-                    $identifier .
-                    '" defines an invalid module class. Ensure the class exists and implements the "' .
-                    AdminPanelModuleInterface::class .
-                    '".',
-                    1519490112
-                );
-            }
-        }
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Main.html';
+        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
+        $view->setPartialRootPaths(['EXT:adminpanel/Resources/Private/Partials']);
+        $view->setLayoutRootPaths(['EXT:adminpanel/Resources/Private/Layouts']);
 
-        $orderedModules = GeneralUtility::makeInstance(DependencyOrderingService::class)->orderByDependencies(
-            $modules
+        $view->assignMultiple(
+            [
+                'toggleActiveUrl' => $this->generateBackendUrl('ajax_adminPanel_toggle'),
+                'resources' => $resources,
+                'adminPanelActive' => $this->isAdminPanelActivated(),
+            ]
         );
-
-        foreach ($orderedModules as $module) {
-            $this->modules[] = GeneralUtility::makeInstance($module['module']);
+        if ($this->isAdminPanelActivated()) {
+            $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
+            $view->assignMultiple(
+                [
+                    'modules' => $this->modules,
+                    'hookObjectContent' => $hookObjectContent,
+                    'saveUrl' => $this->generateBackendUrl('ajax_adminPanel_saveForm'),
+                    'moduleResources' => $moduleResources,
+                ]
+            );
         }
+
+        return $view->render();
     }
 
-    /**
-     * Returns LanguageService
-     *
-     * @return LanguageService
-     */
-    protected function getLanguageService(): LanguageService
+    protected function generateBackendUrl(string $route): string
     {
-        return $GLOBALS['LANG'];
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        return (string)$uriBuilder->buildUriFromRoute($route);
     }
 
-    /**
-     * Returns the current BE user.
-     *
-     * @return FrontendBackendUserAuthentication
-     */
-    protected function getBackendUser(): FrontendBackendUserAuthentication
+    protected function getAdditionalResourcesForModules(array $modules): array
     {
-        return $GLOBALS['BE_USER'];
-    }
-
-    /**
-     * @return TypoScriptFrontendController
-     */
-    protected function getTypoScriptFrontendController(): TypoScriptFrontendController
-    {
-        return $GLOBALS['TSFE'];
+        $result = [
+            'js' => '',
+            'css' => '',
+        ];
+        /** @var AdminPanelModuleInterface $module */
+        foreach ($modules as $module) {
+            foreach ($module->getJavaScriptFiles() as $file) {
+                $result['js'] .= $this->getJsTag($file);
+            }
+            foreach ($module->getCssFiles() as $file) {
+                $result['css'] .= $this->getCssTag($file);
+            }
+        }
+        return $result;
     }
 
     /**
@@ -194,48 +155,13 @@ class MainController implements SingletonInterface
     }
 
     /**
-     * Renders the panel - Is currently called via RenderHook in postProcessOutput
+     * Returns the current BE user.
      *
-     * @return string
+     * @return FrontendBackendUserAuthentication
      */
-    public function render(): string
+    protected function getBackendUser(): FrontendBackendUserAuthentication
     {
-        $adminPanelView = GeneralUtility::makeInstance(AdminPanelView::class);
-        $hookObjectContent = $adminPanelView->callDeprecatedHookObject();
-        $resources = $this->getResources();
-
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Main.html';
-        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
-        $view->setPartialRootPaths(['EXT:adminpanel/Resources/Private/Partials']);
-        $view->setLayoutRootPaths(['EXT:adminpanel/Resources/Private/Layouts']);
-
-        $view->assignMultiple(
-            [
-                'toggleActiveUrl' => $this->generateBackendUrl('ajax_adminPanel_toggle'),
-                'resources' => $resources,
-                'adminPanelActive' => $this->isAdminPanelActivated()
-            ]
-        );
-        if ($this->isAdminPanelActivated()) {
-            $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
-            $view->assignMultiple(
-                [
-                    'modules' => $this->modules,
-                    'hookObjectContent' => $hookObjectContent,
-                    'saveUrl' => $this->generateBackendUrl('ajax_adminPanel_saveForm'),
-                    'moduleResources' => $moduleResources
-                ]
-            );
-        }
-
-        return  $view->render();
-    }
-
-    protected function generateBackendUrl(string $route): string
-    {
-        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-        return (string)$uriBuilder->buildUriFromRoute($route);
+        return $GLOBALS['BE_USER'];
     }
 
     /**
@@ -268,6 +194,15 @@ class MainController implements SingletonInterface
         return $js;
     }
 
+    /**
+     * Returns LanguageService
+     *
+     * @return LanguageService
+     */
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
+    }
 
     protected function getResources(): string
     {
@@ -279,22 +214,105 @@ class MainController implements SingletonInterface
         return $css . $this->getAdminPanelStylesheet() . $js;
     }
 
-    protected function getAdditionalResourcesForModules(array $modules): array
+    /**
+     * @return TypoScriptFrontendController
+     */
+    protected function getTypoScriptFrontendController(): TypoScriptFrontendController
     {
-        $result = [
-            'js' => '',
-            'css' => ''
-        ];
-        /** @var AdminPanelModuleInterface $module */
-        foreach ($modules as $module) {
-            foreach ($module->getJavaScriptFiles() as $file) {
-                $result['js'] .= $this->getJsTag($file);
+        return $GLOBALS['TSFE'];
+    }
+
+    /**
+     * Returns true if admin panel was activated
+     * (switched "on" via GUI)
+     *
+     * @return bool
+     */
+    protected function isAdminPanelActivated(): bool
+    {
+        return $this->getBackendUser()->uc['TSFE_adminConfig']['display_top'] ?? false;
+    }
+
+    /**
+     * Save admin panel configuration to backend user UC
+     */
+    protected function saveConfiguration(): void
+    {
+        $input = GeneralUtility::_GP('TSFE_ADMIN_PANEL');
+        $beUser = $this->getBackendUser();
+        if (is_array($input)) {
+            // Setting
+            $beUser->uc['TSFE_adminConfig'] = array_merge(
+                !is_array($beUser->uc['TSFE_adminConfig']) ? [] : $beUser->uc['TSFE_adminConfig'],
+                $input
+            );
+            unset($beUser->uc['TSFE_adminConfig']['action']);
+
+            foreach ($this->modules as $module) {
+                if ($module->isEnabled() && $module->isOpen()) {
+                    $module->onSubmit($input);
+                }
             }
-            foreach ($module->getCssFiles() as $file) {
-                $result['css'] .= $this->getCssTag($file);
+            // Saving
+            $beUser->writeUC();
+            // Flush fluid template cache
+            $cacheManager = new CacheManager();
+            $cacheManager->setCacheConfigurations($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']);
+            $cacheManager->getCache('fluid_template')->flush();
+        }
+    }
+
+    protected function validateSortAndInitializeSubModules(array $modules): array {
+        return $this->validateSortAndInitializeModules($modules, 'sub');
+    }
+
+    /**
+     * Validates, sorts and initiates the registered modules
+     *
+     * @param array $modules
+     * @param string $type
+     * @return array
+     */
+    protected function validateSortAndInitializeModules(array $modules, string $type = 'main'): array
+    {
+        if (empty($modules)) {
+            return [];
+        }
+        foreach ($modules as $identifier => $configuration) {
+            if (empty($configuration) || !is_array($configuration)) {
+                throw new \RuntimeException(
+                    'Missing configuration for module "' . $identifier . '".',
+                    1519490105
+                );
+            }
+            if (!is_string($configuration['module']) ||
+                empty($configuration['module']) ||
+                !class_exists($configuration['module']) ||
+                !is_subclass_of(
+                    $configuration['module'],
+                    ($type === 'main' ? AdminPanelModuleInterface::class : AdminPanelSubModuleInterface::class)
+                )
+            ) {
+                throw new \RuntimeException(
+                    'The module "' .
+                    $identifier .
+                    '" defines an invalid module class. Ensure the class exists and implements the "' .
+                    AdminPanelModuleInterface::class .
+                    '".',
+                    1519490112
+                );
             }
         }
-        return $result;
+
+        $orderedModules = GeneralUtility::makeInstance(DependencyOrderingService::class)->orderByDependencies(
+            $modules
+        );
+
+        $moduleInstances = [];
+        foreach ($orderedModules as $module) {
+            $moduleInstances[] = GeneralUtility::makeInstance($module['module']);
+        }
+        return $moduleInstances;
     }
 
 }

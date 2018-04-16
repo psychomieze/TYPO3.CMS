@@ -53,14 +53,14 @@ class PreviewModule extends AbstractModule
         $view->assignMultiple(
             [
                 'show' => [
-                    'hiddenPages' => $this->getConfigurationOption('showHiddenPages'),
-                    'hiddenRecords' => $this->getConfigurationOption('showHiddenRecords'),
-                    'fluidDebug' => $this->getConfigurationOption('showFluidDebug'),
+                    'hiddenPages' => $this->configurationService->getConfigurationOption('preview', 'showHiddenPages'),
+                    'hiddenRecords' => $this->configurationService->getConfigurationOption('preview', 'showHiddenRecords'),
+                    'fluidDebug' => $this->configurationService->getConfigurationOption('preview', 'showFluidDebug'),
                 ],
-                'simulateDate' => $this->getConfigurationOption('simulateDate'),
+                'simulateDate' => $this->configurationService->getConfigurationOption('preview', 'simulateDate'),
                 'frontendUserGroups' => [
                     'availableGroups' => $frontendGroupsRepository->getAvailableFrontendUserGroups(),
-                    'selected' => $this->getConfigurationOption('simulateUserGroup'),
+                    'selected' => $this->configurationService->getConfigurationOption('preview', 'simulateUserGroup'),
                 ],
             ]
         );
@@ -143,10 +143,10 @@ class PreviewModule extends AbstractModule
         $tsfe = $this->getTypoScriptFrontendController();
         $tsfe->clear_preview();
         $tsfe->fePreview = 1;
-        $tsfe->showHiddenPage = (bool)$this->getConfigurationOption('showHiddenPages');
-        $tsfe->showHiddenRecords = (bool)$this->getConfigurationOption('showHiddenRecords');
+        $tsfe->showHiddenPage = (bool)$this->configurationService->getConfigurationOption('preview', 'showHiddenPages');
+        $tsfe->showHiddenRecords = (bool)$this->configurationService->getConfigurationOption('preview', 'showHiddenRecords');
         // Simulate date
-        $simulateDate = $this->getConfigurationOption('simulateDate');
+        $simulateDate = $this->configurationService->getConfigurationOption('preview', 'simulateDate');
         $simTime = null;
         if ($simulateDate) {
             $date = new \DateTime($simulateDate);
@@ -162,7 +162,7 @@ class PreviewModule extends AbstractModule
             $GLOBALS['SIM_ACCESS_TIME'] = $simTime - $simTime % 60;
         }
         // simulate user
-        $tsfe->simUserGroup = $this->getConfigurationOption('simulateUserGroup');
+        $tsfe->simUserGroup = $this->configurationService->getConfigurationOption('preview', 'simulateUserGroup');
         if ($tsfe->simUserGroup) {
             if ($tsfe->fe_user->user) {
                 $tsfe->fe_user->user[$tsfe->fe_user->usergroup_column] = $tsfe->simUserGroup;

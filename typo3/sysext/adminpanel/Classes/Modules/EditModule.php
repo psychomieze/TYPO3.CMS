@@ -46,8 +46,8 @@ class EditModule extends AbstractModule
             [
                 'feEdit' => ExtensionManagementUtility::isLoaded('feedit'),
                 'display' => [
-                    'fieldIcons' => $this->getConfigurationOption('displayFieldIcons'),
-                    'displayIcons' => $this->getConfigurationOption('displayIcons'),
+                    'fieldIcons' => $this->configurationService->getConfigurationOption('edit','displayFieldIcons'),
+                    'displayIcons' => $this->configurationService->getConfigurationOption('edit', 'displayIcons'),
                 ],
                 'toolbar' => $toolbar,
                 'script' => [
@@ -118,8 +118,8 @@ class EditModule extends AbstractModule
     {
         $extFeEditLoaded = ExtensionManagementUtility::isLoaded('feedit');
         $typoScriptFrontend = $this->getTypoScriptFrontendController();
-        $typoScriptFrontend->displayEditIcons = $this->getConfigurationOption('displayIcons');
-        $typoScriptFrontend->displayFieldEditIcons = $this->getConfigurationOption('displayFieldIcons');
+        $typoScriptFrontend->displayEditIcons = $this->configurationService->getConfigurationOption('edit','displayIcons');
+        $typoScriptFrontend->displayFieldEditIcons = $this->configurationService->getConfigurationOption('edit', 'displayFieldIcons');
 
         if (GeneralUtility::_GP('ADMCMD_editIcons')) {
             $typoScriptFrontend->displayFieldEditIcons = '1';

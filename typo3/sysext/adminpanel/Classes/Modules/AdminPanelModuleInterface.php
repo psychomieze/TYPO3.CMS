@@ -26,15 +26,6 @@ use TYPO3\CMS\Core\Http\ServerRequest;
 interface AdminPanelModuleInterface
 {
     /**
-     * Module content as rendered HTML
-     *
-     * @return string
-     */
-    public function getContent(): string;
-
-
-
-    /**
      * Identifier for this module,
      * for example "preview" or "cache"
      *
@@ -108,4 +99,12 @@ interface AdminPanelModuleInterface
      * @return array
      */
     public function getCssFiles(): array;
+
+    /**
+     * @param array $subModules
+     * @return void
+     */
+    public function setSubModules(array $subModules): void;
+
+    public function getSubModules(): array;
 }

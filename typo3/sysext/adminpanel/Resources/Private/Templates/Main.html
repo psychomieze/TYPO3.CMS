@@ -5,7 +5,7 @@
 
 <f:section name="module">
 	<f:for each="{modules}" as="module">
-		<f:if condition="{module.content}">
+		<f:if condition="{module.subModules}">
 
 			<div class="typo3-adminPanel-module">
 				<div class="typo3-adminPanel-module-trigger" data-typo3-role="typo3-adminPanel-module-trigger">
@@ -25,24 +25,32 @@
 							{module.label}
 						</h3>
 						<div class="typo3-adminPanel-module-content-nav" data-typo3-role="typo3-adminPanel-tabs">
-							<a class="typo3-adminPanel-module-content-nav-item" data-typo3-tab-target="general">General</a>
-							<a class="typo3-adminPanel-module-content-nav-item" data-typo3-tab-target="get">$_GET</a>
-							<a class="typo3-adminPanel-module-content-nav-item" data-typo3-tab-target="post">$_POST</a>
-							<a class="typo3-adminPanel-module-content-nav-item" data-typo3-tab-target="cookie">$_COOKIE</a>
-							<a class="typo3-adminPanel-module-content-nav-item" data-typo3-tab-target="server">$_SERVER</a>
+							<f:for each="{module.subModules}" as="sub">
+								<a class="typo3-adminPanel-module-content-nav-item"
+									 data-typo3-tab-target="{sub.identifier}">{sub.label}</a>
+							</f:for>
 						</div>
 						<div class="typo3-adminPanel-module-content-filter">
 							<input type="text" placeholder="filter">
 						</div>
 						<div class="typo3-adminPanel-module-content-toolbar">
 							<div class="typo3-adminPanel-btn-group">
-								<div class="typo3-adminPanel-btn typo3-adminPanel-btn-default typo3-adminPanel-tabs-trigger" data-typo3-role="typo3-adminPanel-tabs-trigger">
+								<div class="typo3-adminPanel-btn typo3-adminPanel-btn-default typo3-adminPanel-tabs-trigger"
+										 data-typo3-role="typo3-adminPanel-tabs-trigger">
 									<core:icon identifier="actions-menu" alternativeMarkupIdentifier="inline"/>
 								</div>
-								<div class="typo3-adminPanel-btn typo3-adminPanel-btn-default typo3-adminPanel-popup" data-typo3-role="typo3-adminPanel-popup-trigger">
+								<div class="typo3-adminPanel-btn typo3-adminPanel-btn-default typo3-adminPanel-popup"
+										 data-typo3-role="typo3-adminPanel-popup-trigger">
 									<core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
 									<div class="typo3-adminPanel-popup-content">
-										<f:render section="popup" />
+										<div class="typo3-adminPanel-form-group">
+											<f:for each="{module.subModules}" as="sub">
+												<f:format.raw>
+													{sub.settings}
+												</f:format.raw>
+											</f:for>
+											<f:form.button id="typo3-adminPanel-btn typo3-adminPanel-btn-default">Save</f:form.button>
+										</div>
 									</div>
 								</div>
 								<a href="javascript:location.reload();" class="typo3-adminPanel-btn typo3-adminPanel-btn-default">
@@ -53,7 +61,18 @@
 						</div>
 					</div>
 					<div class="typo3-adminPanel-module-content-inner">
-						<f:format.raw>{module.content}</f:format.raw>
+						<div class="container--tabs">
+							<section class="row">
+								<div class="tab-content">
+									<f:for each="{module.subModules}" as="sub" iteration="iterator">
+										<div class="tab-pane {f:if(condition:'{iterator.isFirst}',then:'active')}" data-typo3-role="typo3-adminPanel-tab"
+												 data-typo3-tab-id="{sub.identifier}">
+											<f:format.raw>{sub.content}</f:format.raw>
+										</div>
+									</f:for>
+								</div>
+							</section>
+						</div>
 					</div>
 				</div>
 
@@ -118,15 +137,3 @@
 	</div>
 </f:section>
 
-
-<f:section name="popup">
-	<div class="typo3-adminPanel-form-group">
-		<f:render partial="Modules/TsDebug/Tree" debug="false" arguments="{_all}"/>
-		<f:render partial="Modules/TsDebug/DisplayTimes" debug="false" arguments="{_all}"/>
-		<f:render partial="Modules/TsDebug/DisplayMessages" debug="false" arguments="{_all}"/>
-		<f:render partial="Modules/TsDebug/TrackContentRendering" debug="false" arguments="{_all}"/>
-		<f:render partial="Modules/TsDebug/DisplayContent" debug="false" arguments="{_all}"/>
-		<f:render partial="Modules/TsDebug/ForceTemplateParsing" debug="false" arguments="{_all}"/>
-		<f:form.button id="typo3-adminPanel-btn typo3-adminPanel-btn-default">Save</f:form.button>
-	</div>
-</f:section>

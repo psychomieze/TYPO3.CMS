@@ -91,7 +91,7 @@ class CacheModule extends AbstractModule
      */
     public function initializeModule(ServerRequest $request): void
     {
-        if ($this->getConfigurationOption('noCache')) {
+        if ($this->configurationService->getConfigurationOption('cache', 'noCache')) {
             $this->getTypoScriptFrontendController()->set_no_cache('Admin Panel: No Caching', true);
         }
     }

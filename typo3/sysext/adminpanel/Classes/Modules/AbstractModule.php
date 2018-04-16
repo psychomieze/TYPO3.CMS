@@ -16,10 +16,12 @@ namespace TYPO3\CMS\Adminpanel\Modules;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Adminpanel\Service\ConfigurationService;
 use TYPO3\CMS\Backend\FrontendBackendUserAuthentication;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Abstract base class for Core Admin Panel Modules containing helper methods
@@ -36,11 +38,15 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     /**
      * @var array
      */
+    protected $subModules = [];
     protected $mainConfiguration;
+
+    protected $configurationService;
 
     public function __construct()
     {
-        $this->mainConfiguration = $this->getBackendUser()->getTSConfigProp('admPanel');
+        $this->configurationService = GeneralUtility::makeInstance(ConfigurationService::class);
+        $this->mainConfiguration = $this->configurationService->getMainConfiguration();
     }
 
     public function getSettings(): string
@@ -117,26 +123,7 @@ abstract class AbstractModule implements AdminPanelModuleInterface
         return $GLOBALS['BE_USER'];
     }
 
-    /**
-     * Helper method to return configuration options
-     * Checks User TSConfig overrides and current backend user session
-     *
-     * @param string $option
-     * @return string
-     */
-    protected function getConfigurationOption(string $option): string
-    {
-        $beUser = $this->getBackendUser();
-        $identifier = $this->getIdentifier();
 
-        if ($option && isset($this->mainConfiguration['override.'][$identifier . '.'][$option])) {
-            $returnValue = $this->mainConfiguration['override.'][$identifier . '.'][$option];
-        } else {
-            $returnValue = $beUser->uc['TSFE_adminConfig'][$identifier . '_' . $option] ?? '';
-        }
-
-        return (string)$returnValue;
-    }
 
     /**
      * Returns LanguageService
@@ -184,5 +171,19 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     public function getShortInfo(): string
     {
         return '';
+    }
+
+    /**
+     * @param array $subModules
+     * @return void
+     */
+    public function setSubModules(array $subModules): void
+    {
+        $this->subModules = $subModules;
+    }
+
+    public function getSubModules(): array
+    {
+        return $this->subModules;
     }
 }
