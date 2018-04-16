@@ -6,6 +6,9 @@
             <trans-unit id="module.label">
                 <source>TypoScript</source>
             </trans-unit>
+            <trans-unit id="module.shortinfo">
+                <source>TypoScript (%s Messages)</source>
+            </trans-unit>
             <trans-unit id="treeDisplay">
                 <source>Tree display</source>
             </trans-unit>

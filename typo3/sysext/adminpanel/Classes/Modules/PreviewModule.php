@@ -29,6 +29,11 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  */
 class PreviewModule extends AbstractModule
 {
+
+    public function getIconIdentifier():string
+    {
+        return 'actions-preview';
+    }
     /**
      * Force the preview panel to be opened
      *
@@ -36,22 +41,7 @@ class PreviewModule extends AbstractModule
      */
     protected $forceOpen = false;
 
-    /**
-     * @inheritdoc
-     */
-    public function getAdditionalJavaScriptCode(): string
-    {
-        return 'TSFEtypo3FormFieldSet("TSFE_ADMIN_PANEL[preview_simulateDate]", "datetime", "", 0, 0);';
-    }
-
-    /**
-     * Creates the content for the "preview" section ("module") of the Admin Panel
-     *
-     * @return string HTML content for the section. Consists of a string with table-rows with four columns.
-     * @see display()
-     * @throws \InvalidArgumentException
-     */
-    public function getContent(): string
+    public function getSettings(): string
     {
         $view = GeneralUtility::makeInstance(StandaloneView::class);
         $templateNameAndPath = $this->extResources . '/Templates/Modules/Preview.html';
@@ -115,19 +105,6 @@ class PreviewModule extends AbstractModule
     }
 
     /**
-     * Force module to be shown if either time or users/groups are simulated
-     *
-     * @return bool
-     */
-    public function isShown(): bool
-    {
-        if ($this->forceOpen) {
-            return true;
-        }
-        return parent::isShown();
-    }
-
-    /**
      * Clear page cache if fluid debug output is enabled
      *
      * @param array $input
@@ -148,13 +125,6 @@ class PreviewModule extends AbstractModule
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function showFormSubmitButton(): bool
-    {
-        return true;
-    }
 
     /**
      * @return TypoScriptFrontendController
@@ -168,7 +138,7 @@ class PreviewModule extends AbstractModule
      * Initialize frontend preview functionality incl.
      * simulation of users or time
      */
-    protected function initializeFrontendPreview()
+    protected function initializeFrontendPreview(): void
     {
         $tsfe = $this->getTypoScriptFrontendController();
         $tsfe->clear_preview();
@@ -176,7 +146,17 @@ class PreviewModule extends AbstractModule
         $tsfe->showHiddenPage = (bool)$this->getConfigurationOption('showHiddenPages');
         $tsfe->showHiddenRecords = (bool)$this->getConfigurationOption('showHiddenRecords');
         // Simulate date
-        $simTime = $this->getConfigurationOption('simulateDate');
+        $simulateDate = $this->getConfigurationOption('simulateDate');
+        $simTime = null;
+        if ($simulateDate) {
+            $date = new \DateTime($simulateDate);
+            if ($date === false && is_numeric($simulateDate)) {
+                $date = new \DateTime('@' . $simulateDate);
+            }
+            if ($date !== false) {
+                $simTime = $date->getTimestamp();
+            }
+        }
         if ($simTime) {
             $GLOBALS['SIM_EXEC_TIME'] = $simTime;
             $GLOBALS['SIM_ACCESS_TIME'] = $simTime - $simTime % 60;
@@ -196,5 +176,13 @@ class PreviewModule extends AbstractModule
         if (!$tsfe->simUserGroup && !$simTime && !$tsfe->showHiddenPage && !$tsfe->showHiddenRecords) {
             $tsfe->fePreview = 0;
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getJavaScriptFiles(): array
+    {
+        return ['EXT:adminpanel/Resources/Public/JavaScript/Modules/Preview.js'];
     }
 }

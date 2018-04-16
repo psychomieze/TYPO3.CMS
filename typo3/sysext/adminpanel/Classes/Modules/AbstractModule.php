@@ -18,6 +18,7 @@ namespace TYPO3\CMS\Adminpanel\Modules;
 
 use TYPO3\CMS\Backend\FrontendBackendUserAuthentication;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Localization\LanguageService;
 
 /**
@@ -42,11 +43,12 @@ abstract class AbstractModule implements AdminPanelModuleInterface
         $this->mainConfiguration = $this->getBackendUser()->getTSConfigProp('admPanel');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAdditionalJavaScriptCode(): string
+    public function getSettings(): string
     {
+        return '';
+    }
+
+    public function getIconIdentifier(): string {
         return '';
     }
 
@@ -55,6 +57,11 @@ abstract class AbstractModule implements AdminPanelModuleInterface
      */
     public function initializeModule(ServerRequest $request): void
     {
+    }
+
+    public function getContent(): string
+    {
+        return '';
     }
 
     /**
@@ -76,44 +83,12 @@ abstract class AbstractModule implements AdminPanelModuleInterface
         return $result;
     }
 
-    /**
-     * Uses the backend user session to determine if the module is open
-     *
-     * @return bool
-     */
-    public function isOpen(): bool
-    {
-        $option = 'display_' . $this->getIdentifier();
-        return isset($this->getBackendUser()->uc['TSFE_adminConfig'][$option])
-            ? (bool)$this->getBackendUser()->uc['TSFE_adminConfig'][$option]
-            : false;
-    }
-
-    /**
-     * Determines if the panel for this module is shown
-     * -> returns true if panel is enabled in TSConfig
-     *
-     * @see isEnabled()
-     * @return bool
-     */
-    public function isShown(): bool
-    {
-        return $this->isEnabledViaTsConfig();
-    }
 
     /**
      * @inheritdoc
      */
     public function onSubmit(array $input): void
     {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function showFormSubmitButton(): bool
-    {
-        return false;
     }
 
     /**
@@ -135,9 +110,9 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     /**
      * Returns the current BE user.
      *
-     * @return \TYPO3\CMS\Backend\FrontendBackendUserAuthentication
+     * @return BackendUserAuthentication|FrontendBackendUserAuthentication
      */
-    protected function getBackendUser(): FrontendBackendUserAuthentication
+    protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }
@@ -196,5 +171,18 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     public function getJavaScriptFiles(): array
     {
         return [];
+    }
+
+    /**
+     * @return array
+     */
+    public function getCssFiles(): array
+    {
+        return [];
+    }
+
+    public function getShortInfo(): string
+    {
+        return '';
     }
 }

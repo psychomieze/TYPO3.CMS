@@ -26,6 +26,11 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  */
 class InfoModule extends AbstractModule
 {
+    public function getIconIdentifier(): string
+    {
+        return 'actions-document-info';
+    }
+
     /**
      * Creates the content for the "info" section ("module") of the Admin Panel
      *
@@ -41,6 +46,10 @@ class InfoModule extends AbstractModule
         $tsfe = $this->getTypoScriptFrontendController();
 
         $view->assignMultiple([
+            'post' => $_POST,
+            'get' => $_GET,
+            'cookie' => $_COOKIE,
+            'server' => $_SERVER,
             'info' => [
                 'pageUid' => $tsfe->id,
                 'pageType' => $tsfe->type,
@@ -77,6 +86,13 @@ class InfoModule extends AbstractModule
         return $this->getLanguageService()->sL($locallangFileAndPath);
     }
 
+    public function getShortInfo(): string
+    {
+        $locallangFileAndPath = 'LLL:' . $this->extResources . '/Language/locallang_info.xlf:module.shortinfo';
+        $parseTime = $this->getTimeTracker()->getParseTime();
+        return sprintf($this->getLanguageService()->sL($locallangFileAndPath), $parseTime);
+    }
+
     /**
      * @return TypoScriptFrontendController
      */
@@ -99,7 +115,7 @@ class InfoModule extends AbstractModule
      *
      * @return array
      */
-    private function collectImagesOnPage(): array
+    protected function collectImagesOnPage(): array
     {
         $imagesOnPage = [
             'files' => [],
@@ -135,7 +151,7 @@ class InfoModule extends AbstractModule
      * Gets the document size from the current page in a human readable format
      * @return string
      */
-    private function collectDocumentSize(): string
+    protected function collectDocumentSize(): string
     {
         $documentSize = 0;
         if ($this->isNoCacheEnabled() === true) {
@@ -148,7 +164,7 @@ class InfoModule extends AbstractModule
     /**
      * @return bool
      */
-    private function isNoCacheEnabled(): bool
+    protected function isNoCacheEnabled(): bool
     {
         return (bool)$this->getTypoScriptFrontendController()->no_cache;
     }
