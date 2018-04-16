@@ -273,7 +273,7 @@ class MainController implements SingletonInterface
     {
         $jsFileLocation = 'EXT:adminpanel/Resources/Public/JavaScript/AdminPanel.js';
         $js = $this->getJsTag($jsFileLocation);
-        $cssFileLocation = 'EXT:adminpanel/Resources/Public/Css/panel-new.css';
+        $cssFileLocation = 'EXT:adminpanel/Resources/Public/Css/adminpanel.css';
         $css = $this->getCssTag($cssFileLocation);
 
         return $css . $this->getAdminPanelStylesheet() . $js;
