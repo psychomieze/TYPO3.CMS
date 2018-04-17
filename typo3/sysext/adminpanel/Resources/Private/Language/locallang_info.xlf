@@ -7,7 +7,7 @@
                 <source>Info</source>
             </trans-unit>
             <trans-unit id="module.shortinfo">
-                <source>Info (Load Time: %s ms)</source>
+                <source>(Load Time: %s ms)</source>
             </trans-unit>
             <trans-unit id="imagesOnPage">
                 <source>Images on this page</source>

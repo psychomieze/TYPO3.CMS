@@ -1,15 +1,3 @@
-function recalculateContentHeightForAdminPanel() {
-  var w = window,
-    d = document,
-    e = d.documentElement,
-    g = d.getElementsByTagName('body')[0],
-    y = w.innerHeight || e.clientHeight || g.clientHeight;
-
-  Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-content]')).forEach(function (element) {
-    element.style.maxHeight = y - 36 + 'px';
-  });
-}
-
 function sendAdminPanelForm(event) {
   event.preventDefault();
   var typo3AdminPanel = document.querySelector('[data-typo3-role=typo3-adminPanel]');
@@ -31,30 +19,67 @@ function toggleAdminPanelState() {
   };
 }
 
+function renderBackdrop() {
+  var body = document.querySelector('body');
+  var backdrop = document.createElement('div');
+  backdrop.classList.add('typo3-adminPanel-backdrop');
+  body.appendChild(backdrop);
+  addBackdropListener();
+}
+
+function removeBackdrop() {
+  var backdrop = document.querySelector('.typo3-adminPanel-backdrop');
+  if (backdrop !== null) {
+    backdrop.remove();
+  }
+}
+
+function addBackdropListener() {
+  var allBackdrops = Array.from(document.querySelectorAll('.typo3-adminPanel-backdrop'));
+  allBackdrops.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      removeBackdrop();
+      var allModules = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-trigger]'));
+      allModules.forEach(function (innerElm) {
+        innerElm.closest('.typo3-adminPanel-module').classList.remove('active');
+      });
+    });
+  });
+}
+
+function addModuleListener(allModules) {
+  allModules.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      var parent = this.closest('.typo3-adminPanel-module');
+      if (parent.classList.contains('active')) {
+        removeBackdrop();
+        parent.classList.remove('active');
+      } else {
+        allModules.forEach(function (innerElm) {
+          removeBackdrop();
+          innerElm.closest('.typo3-adminPanel-module').classList.remove('active');
+        });
+        if (parent.classList.contains('typo3-adminPanel-module-backdrop')) {
+          renderBackdrop();
+        }
+        parent.classList.add('active');
+      }
+    });
+  });
+}
+
 function initializeAdminPanel() {
-  recalculateContentHeightForAdminPanel();
+  var allModules = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-trigger]'));
+  addModuleListener(allModules);
   initTabs();
+
+
   Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-saveButton]')).forEach(function (elm) {
     elm.addEventListener('click', sendAdminPanelForm);
   });
 
   Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-trigger]')).forEach(function (trigger) {
     trigger.addEventListener('click', toggleAdminPanelState);
-  });
-
-  var allTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-trigger]'));
-  allTriggers.forEach(function (elm) {
-    elm.addEventListener('click', function () {
-      var parent = this.closest('.typo3-adminPanel-module');
-      if (parent.classList.contains('active')) {
-        parent.classList.remove('active');
-      } else {
-        allTriggers.forEach(function (innerElm) {
-          innerElm.closest('.typo3-adminPanel-module').classList.remove('active');
-        });
-        parent.classList.add('active');
-      }
-    });
   });
 
   var tabTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-tabs-trigger]'));
@@ -84,6 +109,8 @@ function initializeAdminPanel() {
       }
     });
   });
+
+  addBackdropListener();
 }
 
 function initTabs() {
@@ -119,4 +146,3 @@ function initTabs() {
 }
 
 window.addEventListener('load', initializeAdminPanel, false);
-window.addEventListener('resize', recalculateContentHeightForAdminPanel, false);

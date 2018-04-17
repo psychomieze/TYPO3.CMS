@@ -7,7 +7,7 @@
                 <source>TypoScript</source>
             </trans-unit>
             <trans-unit id="module.shortinfo">
-                <source>TypoScript (%s Messages)</source>
+                <source>(%s Messages)</source>
             </trans-unit>
             <trans-unit id="treeDisplay">
                 <source>Tree display</source>

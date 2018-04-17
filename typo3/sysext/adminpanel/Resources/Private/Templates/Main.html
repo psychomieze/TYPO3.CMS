@@ -7,7 +7,7 @@
 	<f:for each="{modules}" as="module">
 		<f:if condition="{module.subModules}">
 
-			<div class="typo3-adminPanel-module">
+			<div class="typo3-adminPanel-module typo3-adminPanel-module-backdrop">
 				<div class="typo3-adminPanel-module-trigger" data-typo3-role="typo3-adminPanel-module-trigger">
 					<div class="typo3-adminPanel-module-icon">
 						<core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
@@ -77,7 +77,7 @@
 		</f:if>
 	</f:for>
 	<f:if condition="{hookObjectModuleContent}">
-		<div class="typo3-adminPanel-module">
+		<div class="typo3-adminPanel-module typo3-adminPanel-module-backdrop">
 			<div class="typo3-adminPanel-module-icon">
 				<core:icon identifier="actions-window-open" alternativeMarkupIdentifier="inline"/>
 				<span class="typo3-adminPanel-module-label">
@@ -96,7 +96,7 @@
 
 
 <f:section name="settings">
-	<div class="typo3-adminPanel-module typo3-adminPanel-settings">
+	<div class="typo3-adminPanel-module typo3-adminPanel-module-settings typo3-adminPanel-settings">
 		<div class="typo3-adminPanel-module-trigger" data-typo3-role="typo3-adminPanel-module-trigger">
 			<div class="typo3-adminPanel-module-icon">
 				<core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
@@ -112,9 +112,8 @@
 					<core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
 					<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.label"/>
 				</h3>
-				<button data-typo3-role="typo3-adminPanel-saveButton" class="typo3-adminPanel-btn typo3-adminPanel-btn-dark">
-					<f:translate
-						key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.updateButtonLabel"/>
+				<button data-typo3-role="typo3-adminPanel-saveButton" class="typo3-adminPanel-btn typo3-adminPanel-btn-default">
+					<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.updateButtonLabel"/>
 				</button>
 			</div>
 			<div class="typo3-adminPanel-module-content-inner">
