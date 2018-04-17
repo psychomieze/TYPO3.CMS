@@ -169,7 +169,7 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver
      * For the local driver, this will always return a path relative to PATH_site.
      *
      * @param string $identifier
-     * @return string
+     * @return string|null NULL if file is missing or deleted, the generated url otherwise
      * @throws \TYPO3\CMS\Core\Resource\Exception
      */
     public function getPublicUrl($identifier)
@@ -638,7 +638,7 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver
     {
         if (empty($propertiesToExtract)) {
             $propertiesToExtract = [
-                'size', 'atime', 'mtime', 'ctime', 'mimetype', 'name',
+                'size', 'atime', 'mtime', 'ctime', 'mimetype', 'name', 'extension',
                 'identifier', 'identifier_hash', 'storage', 'folder_hash'
             ];
         }
@@ -676,6 +676,8 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver
                 return $fileInfo->getCTime();
             case 'name':
                 return PathUtility::basename($fileIdentifier);
+            case 'extension':
+                return PathUtility::pathinfo($fileIdentifier, PATHINFO_EXTENSION);
             case 'mimetype':
                 return (string)$fileInfo->getMimeType();
             case 'identifier':
