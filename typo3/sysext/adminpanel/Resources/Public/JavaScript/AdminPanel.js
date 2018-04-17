@@ -110,6 +110,34 @@ function initializeAdminPanel() {
     });
   });
 
+  var panelTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-sql-trigger]'));
+  panelTriggers.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      var target = this.closest('.typo3-adminPanel-sql-panel');
+      if (target.classList.contains('active')) {
+        target.classList.remove('active');
+      } else {
+        target.classList.add('active');
+      }
+    });
+  });
+
+  var dataFields = Array.from(document.querySelectorAll('.typo3-adminPanel-table th, .typo3-adminPanel-table td'));
+  dataFields.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      elm.focus();
+      // elm.select();
+
+      try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copying text command was ' + msg);
+      } catch (err) {
+        console.log('Oops, unable to copy');
+      }
+    });
+  });
+
   addBackdropListener();
 }
 
