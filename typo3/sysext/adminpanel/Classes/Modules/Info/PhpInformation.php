@@ -34,9 +34,23 @@ class PhpInformation implements AdminPanelSubModuleInterface
      */
     public function getContent(): string
     {
-        ob_start();
-        phpinfo(11);
-        return ob_get_clean();
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Modules/Info/PhpInfo.html';
+        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
+        $view->setPartialRootPaths(['EXT:adminpanel/Resources/Private/Partials']);
+
+        $view->assignMultiple(
+            [
+                'phpVersion' => PHP_VERSION,
+                'phpUname' => PHP_OS,
+                'phpSapi' => PHP_SAPI,
+                'phpMem' => memory_get_peak_usage(),
+                'loadedExtensions' => implode(', ', get_loaded_extensions()),
+                'constants' => get_defined_constants(true)
+            ]
+        );
+
+        return $view->render();
     }
 
     /**
@@ -58,7 +72,7 @@ class PhpInformation implements AdminPanelSubModuleInterface
     public function getLabel(): string
     {
         // @todo lang
-        return 'PHPInfo';
+        return 'PHP';
     }
 
     /**

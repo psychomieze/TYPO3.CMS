@@ -1,0 +1,33 @@
+<h3>PHP</h3>
+
+<table class="typo3-adminPanel-table">
+	<tr>
+		<th>PHP Version</th>
+		<td>{phpVersion}</td>
+	</tr>
+	<tr>
+		<th>PHP Uname</th>
+		<td>{phpUname}</td>
+	</tr>
+	<tr>
+		<th>PHP SAPI</th>
+		<td>{phpSapi}</td>
+	</tr>
+	<tr>
+		<th>Peak Memory Usage</th>
+		<td><f:format.bytes>{phpMem}</f:format.bytes></td>
+	</tr>
+</table>
+
+<h4>Constants</h4>
+<table class="typo3-adminPanel-table">
+	<f:for each="{constants.user}" as="constant" key="constName">
+		<tr>
+			<th>{constName}</th>
+			<td>{constant}</td>
+		</tr>
+	</f:for>
+</table>
+
+<h4>Extensions</h4>
+{loadedExtensions}

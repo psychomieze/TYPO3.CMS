@@ -955,6 +955,7 @@ return [
             ]
         ],
         'file_collections' => [
+            'exclude' => true,
             'label' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:file_collections',
             'config' => [
                 'type' => 'group',
@@ -975,6 +976,7 @@ return [
             ])
         ],
         'filelink_size' => [
+            'exclude' => true,
             'label' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:filelink_size',
             'config' => [
                 'type' => 'check',
@@ -986,6 +988,7 @@ return [
             ]
         ],
         'filelink_sorting' => [
+            'exclude' => true,
             'label' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:filelink_sorting',
             'config' => [
                 'type' => 'select',
@@ -1002,6 +1005,7 @@ return [
             ]
         ],
         'filelink_sorting_direction' => [
+            'exclude' => true,
             'label' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:filelink_sorting_direction',
             'config' => [
                 'type' => 'select',
@@ -1536,6 +1540,11 @@ return [
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:extended,
             ',
             'columnsOverrides' => [
+                'selected_categories' => [
+                    'config' => [
+                        'minitems' => 1,
+                    ]
+                ],
                 'category_field' => [
                     'config' => [
                         'itemsProcConfig' => [
@@ -1569,6 +1578,11 @@ return [
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:extended,
             ',
             'columnsOverrides' => [
+                'selected_categories' => [
+                    'config' => [
+                        'minitems' => 1,
+                    ]
+                ],
                 'category_field' => [
                     'config' => [
                         'itemsProcConfig' => [
