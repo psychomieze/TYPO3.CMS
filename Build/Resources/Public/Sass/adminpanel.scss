@@ -63,7 +63,7 @@ $adminPanel-color: $gray-lighter;
     }
 
     * {
-        box-sizing: content-box;
+        box-sizing: border-box;
         vertical-align: baseline;
         letter-spacing: normal;
         width: auto;
@@ -116,6 +116,91 @@ $adminPanel-color: $gray-lighter;
 
         .icon-actions-edit-unhide .icon-color {
             fill: $brand-danger;
+        }
+    }
+
+    .typo3-adminPanel-table {
+        font-size: $font-size-small;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        width: 100%;
+
+        @media (min-width: $screen-sm-min) {
+            font-size: $font-size-base;
+        }
+
+        tr {
+            width: auto;
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+
+            &:nth-of-type(odd) {
+                background: #fff;
+            }
+
+            &:nth-of-type(even) {
+                background: $gray-lighter;
+            }
+
+            th,
+            td {
+                display: block;
+                border: 0;
+                font-size: $font-size-base;
+                margin: 0;
+                padding: $padding-small-vertical $padding-base-horizontal;
+                white-space: normal;
+                word-break: break-all;
+                text-align: left;
+
+                @media (min-width: $screen-md-min) {
+                    padding: $padding-base-vertical $padding-base-horizontal;
+                }
+
+                &:nth-child(1),
+                &:nth-child(1) {
+                    flex: 0 0 100%;
+                    max-width: 100%;
+
+                    @media (min-width: $screen-md-min) {
+                        flex: 0 0 25%;
+                        max-width: 25%;
+                    }
+                }
+
+                &:nth-child(2),
+                &:nth-child(2) {
+                    flex: 0 0 100%;
+                    max-width: 100%;
+
+                    @media (min-width: $screen-md-min) {
+                        flex: 0 0 auto;
+                        flex-grow: 1;
+                        width: auto;
+                        max-width: none;
+                        word-break: break-all;
+                    }
+                }
+            }
+
+            th {
+                font-weight: bold;
+            }
+
+            @media (min-width: $screen-md-min) {
+                display: flex;
+                flex-flow: row nowrap;
+            }
+        }
+
+        thead tr th {
+            background: $gray-dark;
+            color: #fff;
+            font-weight: bold;
+            padding: $padding-base-vertical $padding-base-horizontal;
         }
     }
 }
@@ -180,6 +265,7 @@ $adminPanel-color: $gray-lighter;
         left: 0;
         box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
         overflow-y: auto;
+        min-height: 240px;
 
         .typo3-adminPanel-module-content-header {
             position: relative;
@@ -348,14 +434,80 @@ $adminPanel-color: $gray-lighter;
             display: block;
         }
     }
+
+    .typo3-adminPanel-tab-content {
+        .typo3-adminPanel-tab-pane {
+            display: none;
+
+            &.active {
+                display: block;
+            }
+        }
+    }
+
+    .typo3-adminPanel-dl {
+        display: flex;
+        flex-wrap: wrap;
+        font-size: $font-size-small;
+        margin: 0;
+        padding: 0;
+
+        @media (min-width: $screen-sm-min) {
+            font-size: $font-size-base;
+        }
+
+        dt,
+        dd {
+            margin: 0;
+            padding: $padding-small-vertical $padding-base-horizontal;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &.typo3-adminPanel-dl-header {
+                background: $gray-dark;
+                color: #fff;
+                font-weight: bold;
+                padding: $padding-base-vertical $padding-base-horizontal;
+            }
+
+            @media (min-width: $screen-md-min) {
+                padding: $padding-base-vertical $padding-base-horizontal;
+            }
+        }
+
+        dt:nth-of-type(even),
+        dd:nth-of-type(even) {
+            background: $gray-lighter;
+        }
+
+        dt {
+            flex: 0 0 100%;
+            max-width: 100%;
+            font-weight: bold;
+            color: $gray-darker;
+
+            @media (min-width: $screen-md-min) {
+                flex: 0 0 25%;
+                max-width: 25%;
+            }
+        }
+
+        dd {
+            flex: 0 0 100%;
+            max-width: 100%;
+            color: $gray-dark;
+
+            @media (min-width: $screen-md-min) {
+                flex: 0 0 75%;
+                max-width: 75%;
+            }
+        }
+    }
 }
 
 .typo3-adminPanel-module.active .typo3-adminPanel-module-content {
     display: block;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-section-body {
-    padding: 0.75em 1em;
 }
 
 .typo3-adminPanel-module label {
@@ -424,44 +576,6 @@ $adminPanel-color: $gray-lighter;
     max-width: 95%;
     margin: 1em 0;
     overflow-x: auto;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table {
-    width: 80%;
-    padding: 1em;
-    border: 1px solid #ccc;
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table td,
-.typo3-adminPanel-module .typo3-adminPanel-table th {
-    text-align: left;
-    overflow: hidden;
-    position: relative;
-    vertical-align: top;
-    padding: 0.75em;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table thead tr {
-    background-color: rgba(0, 0, 0, 0.15);
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table thead td,
-.typo3-adminPanel-module .typo3-adminPanel-table thead th {
-    font-weight: 400;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table-cell-content {
-    word-wrap: break-word;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table-cell-nowrap {
-    white-space: nowrap;
 }
 
 .typo3-adminPanel-module .typo3-adminPanel-logRow-highlight {

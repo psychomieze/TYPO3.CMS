@@ -48,6 +48,12 @@
             <trans-unit id="totalParsetime">
                 <source>Total parsetime</source>
             </trans-unit>
+            <trans-unit id="key">
+                <source>Key</source>
+            </trans-unit>
+            <trans-unit id="value">
+                <source>Value</source>
+            </trans-unit>
         </body>
     </file>
 </xliff>
