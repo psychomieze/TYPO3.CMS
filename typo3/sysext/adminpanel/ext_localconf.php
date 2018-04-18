@@ -23,6 +23,9 @@ $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] = [
             'ts-waterfall' => [
                 'module' => \TYPO3\CMS\Adminpanel\Modules\TsDebug\TypoScriptWaterfall::class
             ],
+            'ts-debug-waterfall' => [
+                'module' => \TYPO3\CMS\Adminpanel\Modules\TsDebug\TypoScriptDebugWaterfall::class
+            ],
         ]
     ],
     'info' => [
