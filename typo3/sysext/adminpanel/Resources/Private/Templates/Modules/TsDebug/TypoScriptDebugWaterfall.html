@@ -1,1 +1,67 @@
-@marco go find me!
+
+<f:alias map="{
+   waterfall: {
+      0: {time_offset: '0%',  time_duration: '2%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      1: {time_offset: '2%',  time_duration: '7%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      2: {time_offset: '9%',  time_duration: '5%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      3: {time_offset: '14%',  time_duration: '36%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      4: {time_offset: '50%',  time_duration: '4%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      5: {time_offset: '54%',  time_duration: '11%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      6: {time_offset: '65%',  time_duration: '2%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      7: {time_offset: '67%',  time_duration: '20%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'},
+      8: {time_offset: '87%',  time_duration: '13%',  time: '8.25', key: 'Some TS key', type: 'COA', value: 'some Value', content: 'maybe some HTML'}
+      }}">
+
+	<div class="typo3-adminPanel-waterfall">
+		<div class="typo3-adminPanel-row typo3-adminPanel-row-header">
+			<div class="typo3-adminPanel-col col-icon"></div>
+			<div class="typo3-adminPanel-col col-1"></div>
+			<div class="typo3-adminPanel-col col-1">
+				Time
+			</div>
+			<div class="typo3-adminPanel-col col">
+				TypoScript Key
+			</div>
+			<div class="typo3-adminPanel-col col-1">
+				Type
+			</div>
+			<div class="typo3-adminPanel-col col-2">
+				Value
+			</div>
+		</div>
+		<f:for each="{waterfall}" as="item">
+			<div class="typo3-adminPanel-panel">
+				<div class="typo3-adminPanel-row">
+					<div class="typo3-adminPanel-col col-icon">
+						<div class="typo3-adminPanel-panel-trigger" data-typo3-role="typo3-adminPanel-trigger">
+							<core:icon identifier="actions-view-list-expand" alternativeMarkupIdentifier="inline"/>
+						</div>
+					</div>
+					<div class="typo3-adminPanel-col col-1 typo3-adminPanel-col-waterfall">
+						<div class="typo3-adminPanel-bar">
+							<div class="typo3-adminPanel-bar-value" style="width:{item.time_duration};margin-left:{item.time_offset};"></div>
+						</div>
+					</div>
+					<div class="typo3-adminPanel-col col-1">
+						{item.time} &micro;s
+					</div>
+					<div class="typo3-adminPanel-col col">
+						{item.key}
+					</div>
+					<div class="typo3-adminPanel-col col-1">
+						{item.type}
+					</div>
+					<div class="typo3-adminPanel-col col-2">
+						{item.value}
+					</div>
+				</div>
+				<div class="typo3-adminPanel-row typo3-adminPanel-panel-collapse" data-typo3-role="typo3-adminPanel-panel-collapse">
+					<div class="typo3-adminPanel-col">
+						<pre>{item.content}</pre>
+					</div>
+				</div>
+			</div>
+		</f:for>
+	</div>
+
+</f:alias>

@@ -13,7 +13,7 @@ $adminPanel-prefix: '#TSFE_ADMIN_PANEL_FORM';
 $adminPanel-height: 36px;
 $adminPanel-bg: $gray-darker;
 $adminPanel-color: $gray-lighter;
-$font-family-sans-serif: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Tahoma, sans-serif;
+$adminPanel-bar-color: #cce7f3;
 $font-family-monospace: monospace;
 
 @mixin make-col($size, $columns: 12) {
@@ -290,6 +290,7 @@ $font-family-monospace: monospace;
         .typo3-adminPanel-module-content-inner {
             overflow-y: auto;
             height: calc(100% - 38px);
+            position: relative;
         }
     }
 }
@@ -576,6 +577,12 @@ $font-family-monospace: monospace;
                 @include make-col($i);
             }
         }
+
+        @media (max-width: $screen-sm-max) {
+            &.col-sm-#{$i} {
+                @include make-col($i);
+            }
+        }
     }
 }
 
@@ -658,7 +665,7 @@ $font-family-monospace: monospace;
         color: $gray-darker;
         text-align: left;
         white-space: nowrap;
-        background-color: $brand-info;
+        background-color: $adminPanel-bar-color;
         transition: all 0.5s ease;
         width: 0;
     }

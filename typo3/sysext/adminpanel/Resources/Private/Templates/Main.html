@@ -53,17 +53,17 @@
 										</div>
 									</div>
 								</div>
-								<a href="javascript:location.reload();" class="typo3-adminPanel-btn typo3-adminPanel-btn-default">
-									<core:icon identifier="actions-refresh" alternativeMarkupIdentifier="inline"/>
-								</a>
+								<button type="button" class="typo3-adminPanel-btn typo3-adminPanel-btn-default" data-typo3-role="typo3-adminPanel-module-close">
+									<core:icon identifier="actions-close" alternativeMarkupIdentifier="inline"/>
+								</button>
 							</div>
 
 						</div>
 					</div>
 					<div class="typo3-adminPanel-module-content-inner">
 						<div class="typo3-adminPanel-tab-content">
-							<f:for each="{module.subModules}" as="sub" iteration="iterator">
-								<div class="typo3-adminPanel-tab-pane {f:if(condition:'{iterator.isFirst}',then:'active')}"
+							<f:for each="{module.subModules}" as="sub" iteration="subModulesIterator">
+								<div class="typo3-adminPanel-tab-pane {f:if(condition:'{subModulesIterator.isFirst}',then:'active')}"
 										 data-typo3-role="typo3-adminPanel-tab"
 										 data-typo3-tab-id="{sub.identifier}">
 									<f:format.raw>{sub.content}</f:format.raw>
