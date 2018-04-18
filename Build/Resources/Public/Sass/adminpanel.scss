@@ -540,6 +540,11 @@ $font-family-monospace: monospace;
     display: flex;
     flex-wrap: wrap;
 
+    &.typo3-adminPanel-row-header {
+        color: $gray;
+        border-bottom: 1px solid $gray-light;
+    }
+
     .typo3-adminPanel-col {
         position: relative;
         width: 100%;
@@ -554,13 +559,13 @@ $font-family-monospace: monospace;
             max-width: 100%;
         }
 
-        .col-auto {
+        &.col-auto {
             flex: 0 0 auto;
             width: auto;
             max-width: none;
         }
 
-        .col-icon {
+        &.col-icon {
             flex: 0 0 24px;
             width: 24px;
             max-width: 24px;
@@ -574,36 +579,36 @@ $font-family-monospace: monospace;
     }
 }
 
+#{$adminPanel-prefix} .typo3-adminPanel-panel {
+    .typo3-adminPanel-panel-trigger {
+        cursor: pointer;
+        display: inline-block;
+        transition: transform 0.25s ease;
+    }
+
+    .typo3-adminPanel-panel-collapse {
+        background: #fff;
+        display: none;
+        border-left: 0;
+        transition: transform 0.25s ease;
+    }
+
+    &.active {
+        .typo3-adminPanel-panel-trigger {
+            transform: rotate(180deg);
+        }
+
+        .typo3-adminPanel-panel-collapse {
+            display: block;
+            border-left: 4px solid $brand-primary;
+        }
+    }
+}
+
 #{$adminPanel-prefix} .typo3-adminPanel-sql {
     .typo3-adminPanel-sql-header {
         color: $gray;
         border-bottom: 1px solid $gray-light;
-    }
-
-    .typo3-adminPanel-sql-panel {
-        .typo3-adminPanel-sql-panel-trigger {
-            cursor: pointer;
-            display: inline-block;
-            transition: transform 0.25s ease;
-        }
-
-        .typo3-adminPanel-sql-panel-collapse {
-            background: #fff;
-            display: none;
-            border-left: 0;
-            transition: transform 0.25s ease;
-        }
-
-        &.active {
-            .typo3-adminPanel-sql-panel-trigger {
-                transform: rotate(180deg);
-            }
-
-            .typo3-adminPanel-sql-panel-collapse {
-                display: block;
-                border-left: 4px solid $brand-primary;
-            }
-        }
     }
 
     .typo3-adminPanel-sql-queries-header {
@@ -671,7 +676,7 @@ $font-family-monospace: monospace;
     text-align: right;
 }
 
-#{$adminPanel-prefix} .typo3-adminPanel-backdrop {
+.typo3-adminPanel-backdrop {
     position: fixed;
     top: 0;
     bottom: 0;

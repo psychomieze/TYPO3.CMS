@@ -110,10 +110,10 @@ function initializeAdminPanel() {
     });
   });
 
-  var panelTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-sql-trigger]'));
+  var panelTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-panel-trigger]'));
   panelTriggers.forEach(function (elm) {
     elm.addEventListener('click', function () {
-      var target = this.closest('.typo3-adminPanel-sql-panel');
+      var target = this.closest('.typo3-adminPanel-panel');
       if (target.classList.contains('active')) {
         target.classList.remove('active');
       } else {
