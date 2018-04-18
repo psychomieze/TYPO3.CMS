@@ -448,7 +448,7 @@ class TimeTracker implements SingletonInterface
             $out .= '<tr>' . $item . '</tr>';
             $c++;
         }
-        $out = '<div class="typo3-adminPanel-table-overflow"><table class="typo3-adminPanel-table">' . $out . '</table></div>';
+        $out = '<div class="typo3-adminPanel-table-overflow"><table>' . $out . '</table></div>';
         return $out;
     }
 
