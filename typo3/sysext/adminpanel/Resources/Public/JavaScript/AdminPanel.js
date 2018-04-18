@@ -122,6 +122,16 @@ function initializeAdminPanel() {
     });
   });
 
+  var moduleClose = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-close]'));
+  moduleClose.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      allModules.forEach(function (innerElm) {
+        innerElm.closest('.typo3-adminPanel-module').classList.remove('active');
+      });
+      removeBackdrop();
+    });
+  });
+
   var dataFields = Array.from(document.querySelectorAll('.typo3-adminPanel-table th, .typo3-adminPanel-table td'));
   dataFields.forEach(function (elm) {
     elm.addEventListener('click', function () {
