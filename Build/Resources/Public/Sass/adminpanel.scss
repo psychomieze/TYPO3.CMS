@@ -541,6 +541,11 @@ $font-family-monospace: monospace;
     display: flex;
     flex-wrap: wrap;
 
+    &:focus,
+    &:hover {
+        background: #f6f8fa;
+    }
+
     &.typo3-adminPanel-row-header {
         color: $gray;
         border-bottom: 1px solid $gray-light;
@@ -579,8 +584,10 @@ $font-family-monospace: monospace;
         }
 
         @media (max-width: $screen-sm-max) {
-            &.col-sm-#{$i} {
-                @include make-col($i);
+            @for $i from 1 through 12 {
+                &.col-sm-#{$i} {
+                    @include make-col($i);
+                }
             }
         }
     }
