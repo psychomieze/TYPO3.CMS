@@ -230,7 +230,7 @@ class MainController implements SingletonInterface
      */
     protected function isAdminPanelActivated(): bool
     {
-        return $this->getBackendUser()->uc['TSFE_adminConfig']['display_top'] ?? false;
+        return (bool)($this->getBackendUser()->uc['TSFE_adminConfig']['display_top'] ?? false);
     }
 
     /**
