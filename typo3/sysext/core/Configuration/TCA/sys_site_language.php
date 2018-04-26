@@ -7,6 +7,13 @@ return [
         'typeicon_classes' => [
             'default' => 'mimetypes-x-content-domain',
         ],
+        'adminOnly' => true,
+        'rootLevel' => 1,
+        'mirror' => [
+            'type' => 'child',
+            'parentTable' => 'sys_site',
+            'parentField' => 'languages'
+        ]
     ],
     'columns' => [
         'languageId' => [

@@ -12,6 +12,13 @@ return [
             'ContentFromPid' => 'apps-pagetree-page-content-from-page',
             'ClassDispatcher' => 'mimetypes-text-php',
         ],
+        'adminOnly' => true,
+        'rootLevel' => 1,
+        'mirror' => [
+            'type' => 'child',
+            'parentTable' => 'sys_site',
+            'parentField' => 'errorHandling',
+        ]
     ],
     'columns' => [
         'errorCode' => [

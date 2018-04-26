@@ -68,6 +68,31 @@ class SiteConfiguration
      *
      * @return Site[]
      */
+    public function resolve(): array
+    {
+        // just removed the site object instanciaton to get the plain data for now - oh and the caching, who needs that anyway
+        $finder = new Finder();
+        try {
+            $finder->files()->depth(0)->name($this->configFileName)->in($this->configPath . '/*');
+        } catch (\InvalidArgumentException $e) {
+            // Directory $this->configPath does not exist yet
+            $finder = [];
+        }
+        $loader = GeneralUtility::makeInstance(YamlFileLoader::class);
+        $siteConfiguration = [];
+        foreach ($finder as $fileInfo) {
+            $configuration = $loader->load(GeneralUtility::fixWindowsFilePath((string)$fileInfo));
+            $identifier = basename($fileInfo->getPath());
+            $siteConfiguration[$identifier] = $configuration;
+        }
+        return $siteConfiguration;
+    }
+
+    /**
+     * Return all site objects which have been found in the filesystem.
+     *
+     * @return Site[]
+     */
     public function resolveAllExistingSites(): array
     {
         // Check if the data is already cached

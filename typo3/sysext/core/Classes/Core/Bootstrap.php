@@ -22,6 +22,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Configuration\ConfigurationManager;
+use TYPO3\CMS\Core\Configuration\SiteConfiguration;
 use TYPO3\CMS\Core\Localization\Locales;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Package\FailsafePackageManager;
@@ -124,6 +125,7 @@ class Bootstrap
             static::unsetReservedGlobalVariables();
             static::loadBaseTca();
             static::checkEncryptionKey();
+            static::mirrorData();
         }
 
         $defaultContainerEntries = [
@@ -601,6 +603,39 @@ class Bootstrap
         GeneralUtility::setSingletonInstance(CacheManager::class, $cacheManager);
         $this->setEarlyInstance(CacheManager::class, $cacheManager);
         return $this;
+    }
+
+    private static function mirrorData()
+    {
+        $tca = $GLOBALS['TCA'];
+        $mirroredTables = array_filter($tca, function($conf){
+            $mirrored = $conf['ctrl']['mirrored'] ?? false;
+            $root = $conf['ctrl']['mirror']['aggregateRoot'] ?? false;
+            return $root && $mirrored;
+        });
+
+        foreach ($mirroredTables as $mirroredTableName => $tableConfig) {
+            $config = $tableConfig['ctrl']['mirror'];
+            $configPath = Environment::getConfigPath() . '/' . $config['identifier'];
+            $mirrorObject = GeneralUtility::makeInstance(SiteConfiguration::class, $configPath);
+            foreach ($mirrorObject->resolve() as $folder => $dataSet) {
+                $dataSet[$mirroredTableName][$config['folderMappingField']] = $folder;
+                foreach ($config['children'] ?? [] as $child) {
+                    if(is_array($dataSet[$child])) {
+                        // some resolving of child relations
+                        // this sucks and will probably get unstable, too. hm.
+                        // basically SiteDatabaseEditRow but decoupled from site // more generic [[uid handling foo :(]]
+                    }
+                }
+                // datahandler -> processDataMap($dataSet)
+                // set mirrored true
+                // afterwards choices, choices: if you edit a mirrored record -> write to database or file?
+                // when to decide where to write? "dump to file" as generic feature?
+                // writing to file in general could be done by datahandler post processing (but same children foo bar as
+                // above and what happens if you only edit the child anyway?) -
+                // let's say: everything is easy as long as it doesn't have children.
+            }
+        }
     }
 
     /**

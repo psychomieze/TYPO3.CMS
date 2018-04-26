@@ -7,6 +7,18 @@ return [
         'typeicon_classes' => [
             'default' => 'mimetypes-x-content-domain',
         ],
+        'adminOnly' => true,
+        'rootLevel' => 1,
+        'mirrored' => true,
+        'mirror' => [
+            'aggregateRoot' => true,
+            'folderMappingField' => 'identifier',
+            'identifier' => 'sites',
+            'children' => [
+                'sys_site_errorhandling',
+                'sys_site_language'
+            ]
+        ]
     ],
     'columns' => [
         'identifier' => [

@@ -698,3 +698,77 @@ CREATE TABLE sys_category_record_mm (
 	KEY uid_local_foreign (uid_local,uid_foreign),
 	KEY uid_foreign_tablefield (uid_foreign,tablenames(40),fieldname(3),sorting_foreign)
 );
+
+
+#
+# Table structure for table 'sys_site'
+#
+CREATE TABLE sys_site (
+	uid int(11) unsigned NOT NULL auto_increment,
+	pid int(11) unsigned DEFAULT '0' NOT NULL,
+	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+	hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+
+	mirrored tinyint(4) unsigned DEFAULT '0' NOT NULL,
+
+	identifier varchar(255) DEFAULT '' NOT NULL,
+	root_page_id int(11) DEFAULT '0' NOT NULL,
+	base varchar(255) DEFAULT '' NOT NULL,
+	error_handling text NOT NULL,
+	languages text NOT NULL,
+
+	PRIMARY KEY (uid),
+	KEY parent (pid)
+);
+
+#
+# Table structure for table 'sys_site_errorhandling'
+#
+CREATE TABLE sys_site_errorhandling (
+	uid int(11) unsigned NOT NULL auto_increment,
+	pid int(11) unsigned DEFAULT '0' NOT NULL,
+	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+	hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+
+	mirrored tinyint(1) unsigned DEFAULT '0' NOT NULL,
+
+	error_code varchar(255) DEFAULT '' NOT NULL,
+	error_handler varchar(255) DEFAULT '' NOT NULL,
+	error_fluid_template varchar(255) DEFAULT '' NOT NULL,
+	error_fluid_templates_root_path varchar(255) DEFAULT '' NOT NULL,
+	error_fluid_layouts_root_path varchar(255) DEFAULT '' NOT NULL,
+	error_fluid_partials_root_path varchar(255) DEFAULT '' NOT NULL,
+	error_content_source varchar(255) DEFAULT '' NOT NULL,
+	error_php_class_fqcn varchar(255) DEFAULT '' NOT NULL,
+
+	PRIMARY KEY (uid),
+	KEY parent (pid)
+);
+
+#
+# Table structure for table 'sys_site_language'
+#
+CREATE TABLE sys_site_language (
+	uid int(11) unsigned NOT NULL auto_increment,
+	pid int(11) unsigned DEFAULT '0' NOT NULL,
+	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+	hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+
+	mirrored tinyint(1) unsigned DEFAULT '0' NOT NULL,
+
+	language_id int(11) unsigned DEFAULT '0' NOT NULL,
+	title varchar(255) DEFAULT '' NOT NULL,
+	navigation_title varchar(255) DEFAULT '' NOT NULL,
+	base varchar(255) DEFAULT '' NOT NULL,
+	locale varchar(255) DEFAULT '' NOT NULL,
+	iso_639_1 varchar(255) DEFAULT '' NOT NULL,
+	hreflang varchar(255) DEFAULT '' NOT NULL,
+	direction varchar(255) DEFAULT '' NOT NULL,
+	typo3_language varchar(255) DEFAULT '' NOT NULL,
+	flag varchar(255) DEFAULT '' NOT NULL,
+	fallback_type varchar(255) DEFAULT '' NOT NULL,
+	fallbacks text DEFAULT '' NOT NULL,
+
+	PRIMARY KEY (uid),
+	KEY parent (pid)
+);
