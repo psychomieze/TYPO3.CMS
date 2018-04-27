@@ -19,9 +19,34 @@ $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] = [
     'tsdebug' => [
         'module' => \TYPO3\CMS\Adminpanel\Modules\TsDebugModule::class,
         'after' => ['edit'],
+        'submodules' => [
+            'ts-waterfall' => [
+                'module' => \TYPO3\CMS\Adminpanel\Modules\TsDebug\TypoScriptWaterfall::class
+            ],
+            'ts-debug-waterfall' => [
+                'module' => \TYPO3\CMS\Adminpanel\Modules\TsDebug\TypoScriptDebugWaterfall::class
+            ],
+        ]
     ],
     'info' => [
         'module' => \TYPO3\CMS\Adminpanel\Modules\InfoModule::class,
         'after' => ['tsdebug'],
+        'submodules' => [
+            'general' => [
+                'module' => \TYPO3\CMS\Adminpanel\Modules\Info\GeneralInformation::class
+            ],
+            'request' => [
+                'module' => \TYPO3\CMS\Adminpanel\Modules\Info\RequestInformation::class
+            ],
+            'phpinfo' => [
+                'module' => \TYPO3\CMS\Adminpanel\Modules\Info\PhpInformation::class
+            ],
+        ]
     ],
 ];
+
+
+
+$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['adminPanel_save'] = \TYPO3\CMS\Adminpanel\Controller\AjaxController::class .
+                                                                      '::saveDataAction';
+
