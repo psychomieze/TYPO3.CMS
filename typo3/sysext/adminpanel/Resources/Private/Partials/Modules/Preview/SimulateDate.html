@@ -1,10 +1,13 @@
 <div class="typo3-adminPanel-form-group">
-    <label for="preview_simulateDate">
+    <label>
         <f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_preview.xlf:simulateDate"/>
+        <input type="date" id="typo3-adminPanel-preview-date-hr" data-target="typo3-adminPanel-preview-date"
+        /><br />
+
+        <input type="time" id="typo3-adminPanel-preview-time-hr" />
     </label>
-    <input type="text"
-           id="preview_simulateDate"
-           name="TSFE_ADMIN_PANEL[preview_simulateDate]_hr"
-           onchange="TSFEtypo3FormFieldGet('TSFE_ADMIN_PANEL[preview_simulateDate]', 'datetime', '', 1,0);"/>
-    <input type="hidden" name="TSFE_ADMIN_PANEL[preview_simulateDate]" value="{simulateDate}"/>
+
+    <input type="hidden" name="TSFE_ADMIN_PANEL[preview_simulateDate]" id="typo3-adminPanel-preview-date"
+        value="{simulateDate}"
+    />
 </div>

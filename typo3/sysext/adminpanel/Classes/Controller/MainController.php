@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace TYPO3\CMS\Adminpanel\Controller;
 
@@ -17,14 +17,18 @@ namespace TYPO3\CMS\Adminpanel\Controller;
  */
 
 use TYPO3\CMS\Adminpanel\Modules\AdminPanelModuleInterface;
+use TYPO3\CMS\Adminpanel\Modules\AdminPanelSubModuleInterface;
 use TYPO3\CMS\Adminpanel\View\AdminPanelView;
 use TYPO3\CMS\Backend\FrontendBackendUserAuthentication;
+use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Http\ServerRequest;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\SingletonInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\PathUtility;
+use TYPO3\CMS\Fluid\View\StandaloneView;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
@@ -46,12 +50,23 @@ class MainController implements SingletonInterface
      */
     public function initialize(ServerRequest $request): void
     {
-        $this->validateSortAndInitializeModules();
+        $this->modules = $this->validateSortAndInitializeModules(
+            $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] ?? []
+        );
         $this->saveConfiguration();
 
-        foreach ($this->modules as $module) {
-            if ($module->isEnabled()) {
-                $module->initializeModule($request);
+        if ($this->isAdminPanelActivated()) {
+            foreach ($this->modules as $module) {
+                if ($module->isEnabled()) {
+                    $subModules = $this->validateSortAndInitializeSubModules(
+                        $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'][$module->getIdentifier()]['submodules'] ?? []
+                    );
+                    foreach ($subModules as $subModule) {
+                        $subModule->initializeModule($request);
+                    }
+                    $module->setSubModules($subModules);
+                    $module->initializeModule($request);
+                }
             }
         }
     }
@@ -59,16 +74,163 @@ class MainController implements SingletonInterface
     /**
      * Renders the panel - Is currently called via RenderHook in postProcessOutput
      *
-     * @todo Still uses the legacy AdminpanelView and should be rewritten to fluid
-     *
      * @return string
      */
     public function render(): string
     {
-        // handling via legacy functions
+        // legacy handling
         $adminPanelView = GeneralUtility::makeInstance(AdminPanelView::class);
-        $adminPanelView->setModules($this->modules);
-        return $adminPanelView->display();
+        $hookObjectContent = $adminPanelView->callDeprecatedHookObject();
+        // end legacy handling
+
+        $resources = $this->getResources();
+
+        $view = GeneralUtility::makeInstance(StandaloneView::class);
+        $templateNameAndPath = 'EXT:adminpanel/Resources/Private/Templates/Main.html';
+        $view->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName($templateNameAndPath));
+        $view->setPartialRootPaths(['EXT:adminpanel/Resources/Private/Partials']);
+        $view->setLayoutRootPaths(['EXT:adminpanel/Resources/Private/Layouts']);
+
+        $view->assignMultiple(
+            [
+                'toggleActiveUrl' => $this->generateBackendUrl('ajax_adminPanel_toggle'),
+                'resources' => $resources,
+                'adminPanelActive' => $this->isAdminPanelActivated(),
+            ]
+        );
+        if ($this->isAdminPanelActivated()) {
+            $moduleResources = $this->getAdditionalResourcesForModules($this->modules);
+            $view->assignMultiple(
+                [
+                    'modules' => $this->modules,
+                    'hookObjectContent' => $hookObjectContent,
+                    'saveUrl' => $this->generateBackendUrl('ajax_adminPanel_saveForm'),
+                    'moduleResources' => $moduleResources,
+                ]
+            );
+        }
+
+        return $view->render();
+    }
+
+    protected function generateBackendUrl(string $route): string
+    {
+        $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        return (string)$uriBuilder->buildUriFromRoute($route);
+    }
+
+    protected function getAdditionalResourcesForModules(array $modules): array
+    {
+        $result = [
+            'js' => '',
+            'css' => '',
+        ];
+        /** @var AdminPanelModuleInterface $module */
+        foreach ($modules as $module) {
+            foreach ($module->getJavaScriptFiles() as $file) {
+                $result['js'] .= $this->getJsTag($file);
+            }
+            foreach ($module->getCssFiles() as $file) {
+                $result['css'] .= $this->getCssTag($file);
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Returns a link tag with the admin panel stylesheet
+     * defined using TBE_STYLES
+     *
+     * @return string
+     */
+    protected function getAdminPanelStylesheet(): string
+    {
+        $result = '';
+        if (!empty($GLOBALS['TBE_STYLES']['stylesheets']['admPanel'])) {
+            $stylesheet = GeneralUtility::locationHeaderUrl($GLOBALS['TBE_STYLES']['stylesheets']['admPanel']);
+            $result = '<link rel="stylesheet" type="text/css" href="' .
+                      htmlspecialchars($stylesheet, ENT_QUOTES | ENT_HTML5) . '" />';
+        }
+        return $result;
+    }
+
+    /**
+     * Returns the current BE user.
+     *
+     * @return FrontendBackendUserAuthentication
+     */
+    protected function getBackendUser(): FrontendBackendUserAuthentication
+    {
+        return $GLOBALS['BE_USER'];
+    }
+
+    /**
+     * @param $cssFileLocation
+     * @return string
+     */
+    protected function getCssTag($cssFileLocation): string
+    {
+        $css = '<link type="text/css" rel="stylesheet" href="' .
+               htmlspecialchars(
+                   PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($cssFileLocation)),
+                   ENT_QUOTES | ENT_HTML5
+               ) .
+               '" media="all" />';
+        return $css;
+    }
+
+    /**
+     * @param $jsFileLocation
+     * @return string
+     */
+    protected function getJsTag($jsFileLocation): string
+    {
+        $js = '<script type="text/javascript" src="' .
+              htmlspecialchars(
+                  PathUtility::getAbsoluteWebPath(GeneralUtility::getFileAbsFileName($jsFileLocation)),
+                  ENT_QUOTES | ENT_HTML5
+              ) .
+              '"></script>';
+        return $js;
+    }
+
+    /**
+     * Returns LanguageService
+     *
+     * @return LanguageService
+     */
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
+    }
+
+    protected function getResources(): string
+    {
+        $jsFileLocation = 'EXT:adminpanel/Resources/Public/JavaScript/AdminPanel.js';
+        $js = $this->getJsTag($jsFileLocation);
+        $cssFileLocation = 'EXT:adminpanel/Resources/Public/Css/adminpanel.css';
+        $css = $this->getCssTag($cssFileLocation);
+
+        return $css . $this->getAdminPanelStylesheet() . $js;
+    }
+
+    /**
+     * @return TypoScriptFrontendController
+     */
+    protected function getTypoScriptFrontendController(): TypoScriptFrontendController
+    {
+        return $GLOBALS['TSFE'];
+    }
+
+    /**
+     * Returns true if admin panel was activated
+     * (switched "on" via GUI)
+     *
+     * @return bool
+     */
+    protected function isAdminPanelActivated(): bool
+    {
+        return (bool)($this->getBackendUser()->uc['TSFE_adminConfig']['display_top'] ?? false);
     }
 
     /**
@@ -100,16 +262,21 @@ class MainController implements SingletonInterface
         }
     }
 
+    protected function validateSortAndInitializeSubModules(array $modules): array {
+        return $this->validateSortAndInitializeModules($modules, 'sub');
+    }
+
     /**
      * Validates, sorts and initiates the registered modules
      *
-     * @throws \RuntimeException
+     * @param array $modules
+     * @param string $type
+     * @return array
      */
-    protected function validateSortAndInitializeModules(): void
+    protected function validateSortAndInitializeModules(array $modules, string $type = 'main'): array
     {
-        $modules = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['adminpanel']['modules'] ?? [];
         if (empty($modules)) {
-            return;
+            return [];
         }
         foreach ($modules as $identifier => $configuration) {
             if (empty($configuration) || !is_array($configuration)) {
@@ -123,7 +290,7 @@ class MainController implements SingletonInterface
                 !class_exists($configuration['module']) ||
                 !is_subclass_of(
                     $configuration['module'],
-                    AdminPanelModuleInterface::class
+                    ($type === 'main' ? AdminPanelModuleInterface::class : AdminPanelSubModuleInterface::class)
                 )
             ) {
                 throw new \RuntimeException(
@@ -141,36 +308,11 @@ class MainController implements SingletonInterface
             $modules
         );
 
+        $moduleInstances = [];
         foreach ($orderedModules as $module) {
-            $this->modules[] = GeneralUtility::makeInstance($module['module']);
+            $moduleInstances[] = GeneralUtility::makeInstance($module['module']);
         }
+        return $moduleInstances;
     }
 
-    /**
-     * Returns LanguageService
-     *
-     * @return LanguageService
-     */
-    protected function getLanguageService(): LanguageService
-    {
-        return $GLOBALS['LANG'];
-    }
-
-    /**
-     * Returns the current BE user.
-     *
-     * @return FrontendBackendUserAuthentication
-     */
-    protected function getBackendUser(): FrontendBackendUserAuthentication
-    {
-        return $GLOBALS['BE_USER'];
-    }
-
-    /**
-     * @return TypoScriptFrontendController
-     */
-    protected function getTypoScriptFrontendController(): TypoScriptFrontendController
-    {
-        return $GLOBALS['TSFE'];
-    }
 }

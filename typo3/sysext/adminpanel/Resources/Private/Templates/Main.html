@@ -1,0 +1,135 @@
+<html xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+			xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+			data-namespace-typo3-fluid="true">
+<f:layout name="Default"/>
+
+<f:section name="module">
+	<f:for each="{modules}" as="module">
+		<f:if condition="{module.subModules}">
+
+			<div class="typo3-adminPanel-module typo3-adminPanel-module-backdrop">
+				<div class="typo3-adminPanel-module-trigger" data-typo3-role="typo3-adminPanel-module-trigger">
+					<div class="typo3-adminPanel-module-icon">
+						<core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
+					</div>
+					<div class="typo3-adminPanel-module-trigger-label">{module.label}</div>
+					<f:if condition="{module.shortInfo}">
+						<div class="typo3-adminPanel-module-trigger-information">{module.shortInfo}</div>
+					</f:if>
+				</div>
+
+				<div class="typo3-adminPanel-module-content" data-typo3-role="typo3-adminPanel-module-content">
+					<div class="typo3-adminPanel-module-content-header">
+						<h3>
+							<core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
+							{module.label}
+						</h3>
+						<div class="typo3-adminPanel-module-content-nav" data-typo3-role="typo3-adminPanel-tabs">
+							<f:for each="{module.subModules}" as="sub">
+								<a class="typo3-adminPanel-module-content-nav-item"
+									 data-typo3-tab-target="{sub.identifier}">{sub.label}</a>
+							</f:for>
+						</div>
+						<div class="typo3-adminPanel-module-content-filter">
+							<input type="text" placeholder="filter">
+						</div>
+						<div class="typo3-adminPanel-module-content-toolbar">
+							<div class="typo3-adminPanel-btn-group">
+								<div class="typo3-adminPanel-btn typo3-adminPanel-btn-default typo3-adminPanel-tabs-trigger"
+										 data-typo3-role="typo3-adminPanel-tabs-trigger">
+									<core:icon identifier="actions-menu" alternativeMarkupIdentifier="inline"/>
+								</div>
+								<div class="typo3-adminPanel-btn typo3-adminPanel-btn-default typo3-adminPanel-popup"
+										 data-typo3-role="typo3-adminPanel-popup-trigger">
+									<core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
+									<div class="typo3-adminPanel-popup-content">
+										<div class="typo3-adminPanel-form-group">
+											<f:for each="{module.subModules}" as="sub">
+												<f:format.raw>
+													{sub.settings}
+												</f:format.raw>
+											</f:for>
+											<f:form.button id="typo3-adminPanel-btn typo3-adminPanel-btn-default">Save</f:form.button>
+										</div>
+									</div>
+								</div>
+								<button type="button" class="typo3-adminPanel-btn typo3-adminPanel-btn-default" data-typo3-role="typo3-adminPanel-module-close">
+									<core:icon identifier="actions-close" alternativeMarkupIdentifier="inline"/>
+								</button>
+							</div>
+
+						</div>
+					</div>
+					<div class="typo3-adminPanel-module-content-inner">
+						<div class="typo3-adminPanel-tab-content">
+							<f:for each="{module.subModules}" as="sub" iteration="subModulesIterator">
+								<div class="typo3-adminPanel-tab-pane {f:if(condition:'{subModulesIterator.isFirst}',then:'active')}"
+										 data-typo3-role="typo3-adminPanel-tab"
+										 data-typo3-tab-id="{sub.identifier}">
+									<f:format.raw>{sub.content}</f:format.raw>
+								</div>
+							</f:for>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</f:if>
+	</f:for>
+	<f:if condition="{hookObjectModuleContent}">
+		<div class="typo3-adminPanel-module typo3-adminPanel-module-backdrop">
+			<div class="typo3-adminPanel-module-icon">
+				<core:icon identifier="actions-window-open" alternativeMarkupIdentifier="inline"/>
+				<span class="typo3-adminPanel-module-label">
+                    <f:translate
+											key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:deprecatedModuleLabel"/>
+                </span>
+			</div>
+			<div class="typo3-adminPanel-module-content" data-typo3-role="typo3-adminPanel-module-content">
+				<div class="typo3-adminPanel-module-content-inner">
+					<f:format.raw>{hookObjectModuleContent}</f:format.raw>
+				</div>
+			</div>
+		</div>
+	</f:if>
+</f:section>
+
+
+<f:section name="settings">
+	<div class="typo3-adminPanel-module typo3-adminPanel-module-settings typo3-adminPanel-settings">
+		<div class="typo3-adminPanel-module-trigger" data-typo3-role="typo3-adminPanel-module-trigger">
+			<div class="typo3-adminPanel-module-icon">
+				<core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
+			</div>
+			<div class="typo3-adminPanel-module-trigger-label">
+				<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.label"/>
+			</div>
+		</div>
+
+		<div class="typo3-adminPanel-module-content">
+			<div class="typo3-adminPanel-module-content-header">
+				<h3>
+					<core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
+					<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.label"/>
+				</h3>
+				<button data-typo3-role="typo3-adminPanel-saveButton" class="typo3-adminPanel-btn typo3-adminPanel-btn-default">
+					<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang.xlf:settings.updateButtonLabel"/>
+				</button>
+			</div>
+			<div class="typo3-adminPanel-module-content-inner">
+				<f:for each="{modules}" as="module">
+					<f:if condition="{module.settings}">
+						<div class="typo3-adminPanel-module-settings">
+							<h3>
+								<core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
+								{module.label}
+							</h3>
+							<f:format.raw>{module.settings}</f:format.raw>
+						</div>
+					</f:if>
+				</f:for>
+			</div>
+		</div>
+	</div>
+</f:section>
+

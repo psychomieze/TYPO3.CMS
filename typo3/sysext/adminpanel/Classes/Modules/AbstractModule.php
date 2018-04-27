@@ -16,9 +16,12 @@ namespace TYPO3\CMS\Adminpanel\Modules;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Adminpanel\Service\ConfigurationService;
 use TYPO3\CMS\Backend\FrontendBackendUserAuthentication;
 use TYPO3\CMS\Core\Http\ServerRequest;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Localization\LanguageService;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Abstract base class for Core Admin Panel Modules containing helper methods
@@ -35,18 +38,23 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     /**
      * @var array
      */
+    protected $subModules = [];
     protected $mainConfiguration;
+
+    protected $configurationService;
 
     public function __construct()
     {
-        $this->mainConfiguration = $this->getBackendUser()->getTSConfigProp('admPanel');
+        $this->configurationService = GeneralUtility::makeInstance(ConfigurationService::class);
+        $this->mainConfiguration = $this->configurationService->getMainConfiguration();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getAdditionalJavaScriptCode(): string
+    public function getSettings(): string
     {
+        return '';
+    }
+
+    public function getIconIdentifier(): string {
         return '';
     }
 
@@ -55,6 +63,11 @@ abstract class AbstractModule implements AdminPanelModuleInterface
      */
     public function initializeModule(ServerRequest $request): void
     {
+    }
+
+    public function getContent(): string
+    {
+        return '';
     }
 
     /**
@@ -76,30 +89,6 @@ abstract class AbstractModule implements AdminPanelModuleInterface
         return $result;
     }
 
-    /**
-     * Uses the backend user session to determine if the module is open
-     *
-     * @return bool
-     */
-    public function isOpen(): bool
-    {
-        $option = 'display_' . $this->getIdentifier();
-        return isset($this->getBackendUser()->uc['TSFE_adminConfig'][$option])
-            ? (bool)$this->getBackendUser()->uc['TSFE_adminConfig'][$option]
-            : false;
-    }
-
-    /**
-     * Determines if the panel for this module is shown
-     * -> returns true if panel is enabled in TSConfig
-     *
-     * @see isEnabled()
-     * @return bool
-     */
-    public function isShown(): bool
-    {
-        return $this->isEnabledViaTsConfig();
-    }
 
     /**
      * @inheritdoc
@@ -109,17 +98,9 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public function showFormSubmitButton(): bool
-    {
-        return false;
-    }
-
-    /**
      * Translate given key
      *
-     * @param string $key Key for a label in the $LOCAL_LANG array of "sysext/core/Resources/Private/Language/locallang_tsfe.xlf
+     * @param string $key Key for a label in the $LOCAL_LANG array of "sysext/lang/Resources/Private/Language/locallang_tsfe.xlf
      * @param bool $convertWithHtmlspecialchars If TRUE the language-label will be sent through htmlspecialchars
      * @return string The value for the $key
      */
@@ -135,33 +116,14 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     /**
      * Returns the current BE user.
      *
-     * @return \TYPO3\CMS\Backend\FrontendBackendUserAuthentication
+     * @return BackendUserAuthentication|FrontendBackendUserAuthentication
      */
-    protected function getBackendUser(): FrontendBackendUserAuthentication
+    protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
     }
 
-    /**
-     * Helper method to return configuration options
-     * Checks User TSConfig overrides and current backend user session
-     *
-     * @param string $option
-     * @return string
-     */
-    protected function getConfigurationOption(string $option): string
-    {
-        $beUser = $this->getBackendUser();
-        $identifier = $this->getIdentifier();
 
-        if ($option && isset($this->mainConfiguration['override.'][$identifier . '.'][$option])) {
-            $returnValue = $this->mainConfiguration['override.'][$identifier . '.'][$option];
-        } else {
-            $returnValue = $beUser->uc['TSFE_adminConfig'][$identifier . '_' . $option] ?? '';
-        }
-
-        return (string)$returnValue;
-    }
 
     /**
      * Returns LanguageService
@@ -196,5 +158,32 @@ abstract class AbstractModule implements AdminPanelModuleInterface
     public function getJavaScriptFiles(): array
     {
         return [];
+    }
+
+    /**
+     * @return array
+     */
+    public function getCssFiles(): array
+    {
+        return [];
+    }
+
+    public function getShortInfo(): string
+    {
+        return '';
+    }
+
+    /**
+     * @param array $subModules
+     * @return void
+     */
+    public function setSubModules(array $subModules): void
+    {
+        $this->subModules = $subModules;
+    }
+
+    public function getSubModules(): array
+    {
+        return $this->subModules;
     }
 }
