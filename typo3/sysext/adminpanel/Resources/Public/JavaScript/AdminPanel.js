@@ -122,6 +122,18 @@ function initializeAdminPanel() {
     });
   });
 
+  var settingsTriggers = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-content-settings-trigger]'));
+  settingsTriggers.forEach(function (elm) {
+    elm.addEventListener('click', function () {
+      var target = this.closest('.typo3-adminPanel-module-content').querySelector('.typo3-adminPanel-module-content-settings');
+      if (target.classList.contains('active')) {
+        target.classList.remove('active');
+      } else {
+        target.classList.add('active');
+      }
+    });
+  });
+
   var moduleClose = Array.from(document.querySelectorAll('[data-typo3-role=typo3-adminPanel-module-close]'));
   moduleClose.forEach(function (elm) {
     elm.addEventListener('click', function () {

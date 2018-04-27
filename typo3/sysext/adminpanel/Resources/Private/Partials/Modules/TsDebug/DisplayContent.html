@@ -1,11 +1,12 @@
-<div class="typo3-adminPanel-form-group-checkbox">
-    <input type="hidden" name="TSFE_ADMIN_PANEL[tsdebug_displayContent]" value="0"/>
-    <label for="tsdebug_displayContent">
-        <input type="checkbox"
-               id="tsdebug_displayContent"
-               name="TSFE_ADMIN_PANEL[tsdebug_displayContent]"
-               value="1"
-               {f:if(condition:'{display.content}', then:' checked="checked"')} />
-        <f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_tsdebug.xlf:displayContent"/>
-    </label>
+<div class="typo3-adminPanel-module-content-settings-check">
+	<input type="hidden" name="TSFE_ADMIN_PANEL[tsdebug_displayContent]" value="0"/>
+	<input type="checkbox"
+				 id="tsdebug_displayContent"
+				 name="TSFE_ADMIN_PANEL[tsdebug_displayContent]"
+				 value="1"
+				 class="typo3-adminPanel-module-content-settings-check-input"
+				 {f:if(condition:'{display.content}', then:' checked="checked"')} />
+	<label for="tsdebug_displayContent" class="typo3-adminPanel-module-content-settings-check-label">
+		<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_tsdebug.xlf:displayContent"/>
+	</label>
 </div>

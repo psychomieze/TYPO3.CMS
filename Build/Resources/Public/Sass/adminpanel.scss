@@ -47,6 +47,9 @@ $font-family-monospace: monospace;
 
 #TSFE_ADMIN_PANEL_FORM {
     * {
+        background: none;
+        border: 0;
+        box-shadow: none;
         box-sizing: border-box;
         vertical-align: baseline;
         letter-spacing: normal;
@@ -54,7 +57,10 @@ $font-family-monospace: monospace;
         height: auto;
         font-family: $font-family-sans-serif;
         font-size: $font-size-base;
+        font-weight: normal;
         white-space: normal;
+        margin: 0;
+        padding: 0;
     }
 
     *,
@@ -284,6 +290,78 @@ $font-family-monospace: monospace;
                         display: none;
                     }
                 }
+            }
+        }
+
+        .typo3-adminPanel-module-content-settings {
+            background: $gray-dark;
+            color: $gray-lighter;
+            display: none;
+
+            &.active {
+                display: block;
+            }
+
+            .typo3-adminPanel-module-content-settings-group,
+            .typo3-adminPanel-module-content-settings-actions {
+                padding: $grid-gutter-width / 4 $grid-gutter-width / 2;
+
+                .typo3-adminPanel-module-content-settings-group-heading {
+                    font-size: $font-size-base;
+                    font-weight: bold;
+                    margin-bottom: $grid-gutter-width / 2;
+                    display: block;
+                    width: 100%;
+                }
+
+                @media (min-width: $screen-sm-min) {
+                    display: flex;
+                    flex-flow: row wrap;
+                    justify-content: flex-start;
+                }
+            }
+
+            .typo3-adminPanel-module-content-settings-check {
+                position: relative;
+                display: block;
+                padding-left: 16px;
+                margin-bottom: 12px;
+
+                @media (min-width: $screen-sm-min) {
+                    width: 50%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                @media (min-width: $screen-md-min) {
+                    width: 25%;
+                }
+
+                @media (min-width: $screen-md-min) {
+                    width: 20%;
+                }
+
+                .typo3-adminPanel-module-content-settings-check-input {
+                    position: absolute;
+                    margin-top: 0.3rem;
+                    margin-left: -16px;
+                }
+
+                .typo3-adminPanel-module-content-settings-check-label {
+                    display: inline-block;
+                }
+            }
+
+            &:after,
+            &:before {
+                display: block;
+                content: '';
+                background: linear-gradient(to bottom, darken($gray-dark, 7), $gray-dark);
+                height: $grid-gutter-width / 4;
+            }
+
+            &:after {
+                background: linear-gradient(to top, darken($gray-dark, 7), $gray-dark);
             }
         }
 
@@ -577,6 +655,10 @@ $font-family-monospace: monospace;
             max-width: 24px;
         }
 
+        &.col-header {
+            font-weight: bold;
+        }
+
         @for $i from 1 through 12 {
             &.col-#{$i} {
                 @include make-col($i);
@@ -690,6 +772,13 @@ $font-family-monospace: monospace;
     text-align: right;
 }
 
+#{$adminPanel-prefix}  .typo3-adminPanel-h3 {
+    font-size: $font-size-h4;
+    margin-top: $font-size-h4;
+    margin-bottom: $font-size-h4 / 2;
+    padding: $padding-small-vertical $padding-base-horizontal;
+}
+
 .typo3-adminPanel-backdrop {
     position: fixed;
     top: 0;
@@ -698,70 +787,4 @@ $font-family-monospace: monospace;
     right: 0;
     background: rgba(0, 0, 0, 0.4);
     z-index: 99990;
-}
-
-.typo3-adminPanel-module label {
-    display: block;
-    font-weight: 400;
-    padding: 0;
-    margin: 0;
-    overflow: hidden;
-}
-
-.typo3-adminPanel-module input[type=text],
-.typo3-adminPanel-module select {
-    display: block;
-    padding: 0.5em;
-    border: 1px solid #ccc;
-    margin: 0.5em 0;
-    font-size: inherit;
-}
-
-.typo3-adminPanel-settings {
-    float: right;
-}
-
-.typo3-adminPanel-module input[type=text]:focus,
-.typo3-adminPanel-module input[type=text]:hover,
-.typo3-adminPanel-module select:focus,
-.typo3-adminPanel-module select:hover {
-    border-color: #aaa;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-form-group {
-    margin: 1em 0;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-form-group-checkbox,
-.typo3-adminPanel-module .typo3-adminPanel-form-group-radio {
-    margin: 0.5em 0;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-form-group-checkbox label,
-.typo3-adminPanel-module .typo3-adminPanel-form-group-radio label {
-    padding-left: 20px;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-form-group-checkbox input[type=checkbox],
-.typo3-adminPanel-module .typo3-adminPanel-form-group-checkbox input[type=radio],
-.typo3-adminPanel-module .typo3-adminPanel-form-group-radio input[type=checkbox],
-.typo3-adminPanel-module .typo3-adminPanel-form-group-radio input[type=radio] {
-    float: left;
-    padding: 0;
-    margin: 1px 0 0 -20px;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-table-overflow {
-    max-width: 95%;
-    margin: 1em 0;
-    overflow-x: auto;
-}
-
-.typo3-adminPanel-module .typo3-adminPanel-logRow-highlight {
-    background-color: #fcd3cf;
-}
-
-.typo3-adminPanel-module .stackPointer {
-    color: maroon;
-    vertical-align: top;
 }
