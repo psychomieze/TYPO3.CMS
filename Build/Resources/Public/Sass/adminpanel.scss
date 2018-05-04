@@ -370,6 +370,9 @@ $font-family-monospace: monospace;
             position: relative;
         }
     }
+
+    .typo3-adminPanel-module-content-row {
+    }
 }
 
 #{$adminPanel-prefix} .typo3-adminPanel-btn {
@@ -387,6 +390,7 @@ $font-family-monospace: monospace;
     cursor: pointer;
     white-space: nowrap;
     user-select: none;
+    text-decoration: none;
 
     &:active,
     &:focus,
@@ -618,9 +622,11 @@ $font-family-monospace: monospace;
     display: flex;
     flex-wrap: wrap;
 
-    &:focus,
-    &:hover {
-        background: #f6f8fa;
+    .typo3-adminPanel-row-hover {
+        &:focus,
+        &:hover {
+            background: #f6f8fa;
+        }
     }
 
     &.typo3-adminPanel-row-header {
@@ -771,11 +777,48 @@ $font-family-monospace: monospace;
     text-align: right;
 }
 
-#{$adminPanel-prefix}  .typo3-adminPanel-h3 {
+#{$adminPanel-prefix} .typo3-adminPanel-h3 {
     font-size: $font-size-h4;
     margin-top: $font-size-h4;
     margin-bottom: $font-size-h4 / 2;
-    padding: $padding-small-vertical $padding-base-horizontal;
+    padding: $padding-small-vertical 0;
+}
+
+#{$adminPanel-prefix} .typo3-adminPanel-form-group {
+    margin-bottom: 8px;
+
+    .typo3-adminPanel-form-label + .typo3-adminPanel-form-input,
+    .typo3-adminPanel-form-label + .typo3-adminPanel-form-select,
+    .typo3-adminPanel-form-input + .typo3-adminPanel-form-input {
+        margin-top: 8px;
+    }
+}
+
+#{$adminPanel-prefix} .typo3-adminPanel-form-select {
+    border: 1px solid $gray-light;
+    height: 32px;
+    line-height: 32px;
+    width: 100%;
+}
+
+#{$adminPanel-prefix} .typo3-adminPanel-form-group-checkbox {
+    position: relative;
+    display: block;
+    padding-left: 18px;
+
+    .typo3-adminPanel-form-check-input {
+        position: absolute;
+        margin-top: 2px;
+        margin-left: -16px;
+
+        &:disabled ~ .typo3-adminPanel-form-check-label {
+            color: $gray;
+        }
+    }
+
+    .typo3-adminPanel-form-check-label {
+        margin-bottom: 0;
+    }
 }
 
 .typo3-adminPanel-backdrop {

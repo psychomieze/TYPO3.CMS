@@ -105,7 +105,7 @@
 
 
 <f:section name="settings">
-	<div class="typo3-adminPanel-module typo3-adminPanel-module-settings typo3-adminPanel-settings">
+	<div class="typo3-adminPanel-module typo3-adminPanel-module-settings typo3-adminPanel-settings typo3-adminPanel-module-backdrop">
 		<div class="typo3-adminPanel-module-trigger" data-typo3-role="typo3-adminPanel-module-trigger">
 			<div class="typo3-adminPanel-module-icon">
 				<core:icon identifier="actions-system-extension-configure" alternativeMarkupIdentifier="inline"/>
@@ -126,17 +126,19 @@
 				</button>
 			</div>
 			<div class="typo3-adminPanel-module-content-inner">
-				<f:for each="{modules}" as="module">
-					<f:if condition="{module.settings}">
-						<div>
-							<h3>
-								<core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
-								{module.label}
-							</h3>
-							<f:format.raw>{module.settings}</f:format.raw>
-						</div>
-					</f:if>
-				</f:for>
+				<div class="typo3-adminPanel-row">
+					<f:for each="{modules}" as="module">
+						<f:if condition="{module.settings}">
+							<div class="typo3-adminPanel-col col-4 col-sm-12">
+								<h3 class="typo3-adminPanel-h3">
+									<core:icon identifier="{module.iconIdentifier}" alternativeMarkupIdentifier="inline"/>
+									{module.label}
+								</h3>
+								<f:format.raw>{module.settings}</f:format.raw>
+							</div>
+						</f:if>
+					</f:for>
+				</div>
 			</div>
 		</div>
 	</div>

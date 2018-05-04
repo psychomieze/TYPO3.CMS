@@ -12,12 +12,14 @@
 		</div>
 		<div class="typo3-adminPanel-form-group-checkbox">
 			<f:form.hidden name="TSFE_ADMIN_PANEL[edit_displayIcons]" value="0"/>
-			<label for="edit_displayIcons">
-				<f:form.checkbox
-					name="TSFE_ADMIN_PANEL[edit_displayIcons]"
-					value="1"
-					checked="{display.displayIcons}"
-					id="edit_displayIcons"/>
+			<f:form.checkbox
+				name="TSFE_ADMIN_PANEL[edit_displayIcons]"
+				value="1"
+				checked="{display.displayIcons}"
+				id="edit_displayIcons"
+				class="typo3-adminPanel-form-check-input"
+			/>
+			<label for="edit_displayIcons" class="typo3-adminPanel-form-check-label">
 				<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_edit.xlf:displayIcons"/>
 			</label>
 		</div>
