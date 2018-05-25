@@ -2469,7 +2469,7 @@ class GeneralUtility
     public static function createVersionNumberedFilename($file)
     {
         $lookupFile = explode('?', $file);
-        $path = self::resolveBackPath(self::dirname(PATH_thisScript) . '/' . $lookupFile[0]);
+        $path = self::resolveBackPath(self::dirname(Environment::getCurrentScript()) . '/' . $lookupFile[0]);
 
         $doNothing = false;
         if (TYPO3_MODE === 'FE') {
@@ -2624,11 +2624,11 @@ class GeneralUtility
         switch ((string)$getEnvName) {
             case 'SCRIPT_NAME':
                 $retVal = self::isRunningOnCgiServerApi()
-                    && ($_SERVER['ORIG_PATH_INFO'] ?: $_SERVER['PATH_INFO'])
-                        ? ($_SERVER['ORIG_PATH_INFO'] ?: $_SERVER['PATH_INFO'])
-                        : ($_SERVER['ORIG_SCRIPT_NAME'] ?: $_SERVER['SCRIPT_NAME']);
+                    && (($_SERVER['ORIG_PATH_INFO'] ?? false) ?: ($_SERVER['PATH_INFO'] ?? false))
+                        ? (($_SERVER['ORIG_PATH_INFO'] ?? '') ?: ($_SERVER['PATH_INFO'] ?? ''))
+                        : (($_SERVER['ORIG_SCRIPT_NAME'] ?? '') ?: ($_SERVER['SCRIPT_NAME'] ?? ''));
                 // Add a prefix if TYPO3 is behind a proxy: ext-domain.com => int-server.com/prefix
-                if (self::cmpIP($_SERVER['REMOTE_ADDR'], $GLOBALS['TYPO3_CONF_VARS']['SYS']['reverseProxyIP'])) {
+                if (self::cmpIP(($_SERVER['REMOTE_ADDR'] ?? ''), $GLOBALS['TYPO3_CONF_VARS']['SYS']['reverseProxyIP'])) {
                     if (self::getIndpEnv('TYPO3_SSL') && $GLOBALS['TYPO3_CONF_VARS']['SYS']['reverseProxyPrefixSSL']) {
                         $retVal = $GLOBALS['TYPO3_CONF_VARS']['SYS']['reverseProxyPrefixSSL'] . $retVal;
                     } elseif ($GLOBALS['TYPO3_CONF_VARS']['SYS']['reverseProxyPrefix']) {
@@ -2637,7 +2637,7 @@ class GeneralUtility
                 }
                 break;
             case 'SCRIPT_FILENAME':
-                $retVal = PATH_thisScript;
+                $retVal = Environment::getCurrentScript();
                 break;
             case 'REQUEST_URI':
                 // Typical application of REQUEST_URI is return urls, forms submitting to itself etc. Example: returnUrl='.rawurlencode(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REQUEST_URI'))
@@ -2793,8 +2793,8 @@ class GeneralUtility
                 // This can only be set by external entry scripts
                 if (defined('TYPO3_PATH_WEB')) {
                     $retVal = $url;
-                } elseif (defined('PATH_thisScript') && defined('PATH_site')) {
-                    $lPath = PathUtility::stripPathSitePrefix(dirname(PATH_thisScript)) . '/';
+                } elseif (Environment::getCurrentScript() && defined('PATH_site')) {
+                    $lPath = PathUtility::stripPathSitePrefix(dirname(Environment::getCurrentScript())) . '/';
                     $siteUrl = substr($url, 0, -strlen($lPath));
                     if (substr($siteUrl, -1) !== '/') {
                         $siteUrl .= '/';
