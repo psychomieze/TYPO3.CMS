@@ -1,12 +1,13 @@
-<div class="typo3-adminPanel-form-group-checkbox">
-    <input type="hidden" name="TSFE_ADMIN_PANEL[preview_showHiddenPages]" value="0"/>
-    <label for="preview_showHiddenPages">
-        <input type="checkbox"
-               id="preview_showHiddenPages"
-               name="TSFE_ADMIN_PANEL[preview_showHiddenPages]"
-               value="1"
-               {f:if(condition: '{showHiddenPages}', then:'checked="checked"')}
-        />
-        <f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_preview.xlf:showHiddenPages"/>
-    </label>
+<div class="typo3-adminPanel-form-group typo3-adminPanel-form-group-checkbox">
+	<input type="hidden" name="TSFE_ADMIN_PANEL[preview_showHiddenPages]" value="0"/>
+	<input type="checkbox"
+				 id="preview_showHiddenPages"
+				 name="TSFE_ADMIN_PANEL[preview_showHiddenPages]"
+				 value="1"
+				 class="typo3-adminPanel-form-check-input"
+				 {f:if(condition: '{showHiddenPages}', then:'checked="checked"')}
+	/>
+	<label for="preview_showHiddenPages" class="typo3-adminPanel-form-check-label">
+		<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_preview.xlf:showHiddenPages"/>
+	</label>
 </div>

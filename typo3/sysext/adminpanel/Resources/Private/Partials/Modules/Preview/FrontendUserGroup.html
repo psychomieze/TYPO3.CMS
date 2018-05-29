@@ -1,17 +1,14 @@
 <div class="typo3-adminPanel-form-group">
-    <label for="preview_simulateUserGroup">
-        <f:translate
-                key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_preview.xlf:simulateUserGroup"/>
-    </label>
+	<label for="preview_simulateUserGroup" class="typo3-adminPanel-form-label">
+		<f:translate key="LLL:EXT:adminpanel/Resources/Private/Language/locallang_preview.xlf:simulateUserGroup"/>
+	</label>
 
-    <select name="TSFE_ADMIN_PANEL[preview_simulateUserGroup]"
-            id="preview_simulateUserGroup">
-        <option value="0"></option>
-        <f:for each="{frontendUserGroups.availableGroups}" as="group">
-            <option value="{group.uid}"
-                    {f:if(condition:'{group.uid} == {frontendUserGroups.selected}', then: 'selected="selected"')}>
-            {group.title}
-            </option>
-        </f:for>
-    </select>
+	<select name="TSFE_ADMIN_PANEL[preview_simulateUserGroup]" id="preview_simulateUserGroup" class="typo3-adminPanel-form-select">
+		<option value="0"></option>
+		<f:for each="{frontendUserGroups.availableGroups}" as="group">
+			<option value="{group.uid}" {f:if(condition:'{group.uid} == {frontendUserGroups.selected}', then: 'selected')}>
+				{group.title}
+			</option>
+		</f:for>
+	</select>
 </div>
